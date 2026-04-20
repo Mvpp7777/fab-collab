@@ -12,10 +12,19 @@ export default function Home() {
       </p>
       <Link
         href="/auth/signup"
-        style={{ backgroundColor: "#FF6B47", color: "white" }}
-        className="mt-10 inline-block rounded-full px-8 py-3 font-display text-lg font-semibold shadow-lg transition hover:brightness-110 active:scale-95"
+        style={{
+          backgroundColor: "#FF6B47",
+          color: "white",
+          padding: "14px 28px",
+          borderRadius: "12px",
+          fontWeight: "600",
+          fontSize: "16px",
+          display: "inline-block",
+          textDecoration: "none",
+          marginTop: "40px",
+        }}
       >
-        Get started
+        Get started free
       </Link>
     </main>
   );
