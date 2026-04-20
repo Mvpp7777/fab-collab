@@ -8,7 +8,7 @@ export default function Home() {
         <span className="block text-lagoon">collab</span>
       </h1>
       <p className="mt-8 font-display text-xl text-ocean/80 sm:text-2xl">
-        Write together. Create legends.
+        Write together. Create something legendary.
       </p>
       <Link
         href="/auth/signup"
