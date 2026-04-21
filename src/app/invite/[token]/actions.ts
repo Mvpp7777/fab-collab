@@ -68,7 +68,19 @@ export async function acceptInvitation(params: {
     .update({ accepted_at: new Date().toISOString() })
     .eq("id", invitation.id);
 
-  return { ok: true, projectId: invitation.project_id };
+  // Defensive: confirm the target project actually exists before telling the
+  // client to redirect. Admin client bypasses RLS so this is purely an
+  // existence check, not a permission check.
+  const { data: projectRow } = await admin
+    .from("projects")
+    .select("id")
+    .eq("id", invitation.project_id)
+    .maybeSingle();
+  if (!projectRow) {
+    return { error: "Project not found — it may have been deleted." };
+  }
+
+  return { ok: true, projectId: projectRow.id };
 }
 
 export async function acceptAndRedirect(formData: FormData) {
