@@ -44,7 +44,13 @@ export default async function ProjectPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const { data: project } = await supabase
+  // Use admin client for the server-side render path so we don't depend on
+  // the caller having RLS SELECT on projects/sections/snapshots (newly-joined
+  // collaborators otherwise hit 404 before DB policies are in place).
+  // Access is still gated below by an explicit owner-or-collaborator check.
+  const admin = createAdminClient();
+
+  const { data: project } = await admin
     .from("projects")
     .select("id, title, project_type, collab_mode, status, owner_id")
     .eq("id", params.id)
@@ -54,7 +60,17 @@ export default async function ProjectPage({
 
   const isOwner = project.owner_id === user.id;
 
-  const { data: sectionsData } = await supabase
+  if (!isOwner) {
+    const { data: membership } = await admin
+      .from("collaborators")
+      .select("id")
+      .eq("project_id", project.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!membership) notFound();
+  }
+
+  const { data: sectionsData } = await admin
     .from("sections")
     .select("id, title, position")
     .eq("project_id", project.id)
@@ -62,7 +78,7 @@ export default async function ProjectPage({
 
   const sections = (sectionsData ?? []) as SectionRow[];
 
-  const { data: snapshotsData } = await supabase
+  const { data: snapshotsData } = await admin
     .from("content_snapshots")
     .select("section_id, content_text, created_at")
     .in(
@@ -81,9 +97,6 @@ export default async function ProjectPage({
     sections.map((s) => [s.id, latestBySection[s.id] ?? ""]),
   );
 
-  // Collaborators + invitations via admin so we don't depend on RLS nuances
-  // (owner has RLS SELECT anyway; this keeps the page resilient).
-  const admin = createAdminClient();
   const { data: collabRows } = await admin
     .from("collaborators")
     .select("id, user_id, role, turn_order, users(display_name)")
