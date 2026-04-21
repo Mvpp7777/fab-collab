@@ -40,11 +40,11 @@ export default function NewProjectPage() {
       <main className="mx-auto max-w-5xl px-6 py-12">
         <h1
           className="font-display text-4xl font-extrabold leading-normal tracking-tight text-ocean sm:text-5xl"
-          style={{ paddingBottom: "40px", marginBottom: "40px" }}
+          style={{ paddingBottom: "16px" }}
         >
-          What are you creating?
+          What are you working on?
         </h1>
-        <p className="mt-6 font-display text-lg text-ocean/70">
+        <p className="mt-2 font-display text-lg text-ocean/70">
           Pick a format to get started. You can customize sections later.
         </p>
 
@@ -52,36 +52,52 @@ export default function NewProjectPage() {
           <input type="hidden" name="project_type" value={selectedType} />
           <input type="hidden" name="collab_mode" value={collabMode} />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {PROJECT_TYPES.map((t) => {
-              const active = selectedType === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setSelectedType(t.id)}
-                  aria-pressed={active}
-                  className={[
-                    "rounded-2xl bg-white p-5 text-left shadow-sm transition",
-                    "border-2",
-                    active
-                      ? "border-lagoon ring-2 ring-lagoon/30"
-                      : "border-transparent hover:border-ocean/15",
-                  ].join(" ")}
-                >
-                  <div className="text-3xl" aria-hidden>
-                    {t.emoji}
-                  </div>
-                  <div className="mt-3 font-display text-lg font-bold text-ocean">
-                    {t.label}
-                  </div>
-                  <div className="mt-1 text-sm text-ocean/70">
-                    {t.description}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          {(["creative", "professional"] as const).map((category) => {
+            const typesInCategory = PROJECT_TYPES.filter(
+              (t) => t.category === category,
+            );
+            const heading =
+              category === "creative"
+                ? "Creative projects"
+                : "Work & professional projects";
+            return (
+              <section key={category} className="space-y-4">
+                <h2 className="font-display text-xl font-bold text-ocean">
+                  {heading}
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {typesInCategory.map((t) => {
+                    const active = selectedType === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setSelectedType(t.id)}
+                        aria-pressed={active}
+                        className={[
+                          "rounded-2xl bg-white p-5 text-left shadow-sm transition",
+                          "border-2",
+                          active
+                            ? "border-lagoon ring-2 ring-lagoon/30"
+                            : "border-transparent hover:border-ocean/15",
+                        ].join(" ")}
+                      >
+                        <div className="text-3xl" aria-hidden>
+                          {t.emoji}
+                        </div>
+                        <div className="mt-3 font-display text-lg font-bold text-ocean">
+                          {t.label}
+                        </div>
+                        <div className="mt-1 text-sm text-ocean/70">
+                          {t.description}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
 
           <div className="grid gap-6 sm:grid-cols-2">
             <label className="block">
