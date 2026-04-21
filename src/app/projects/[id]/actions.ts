@@ -90,3 +90,77 @@ export async function saveSection(params: {
   if (error) return { error: error.message };
   return { ok: true };
 }
+
+export type PassTurnResult =
+  | { ok: true; nextName: string | null }
+  | { error: string };
+
+export async function passTurn(params: {
+  projectId: string;
+  activeSectionId: string | null;
+}): Promise<PassTurnResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project, error: projectErr } = await supabase
+    .from("projects")
+    .select("id, title, owner_id")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (projectErr || !project) {
+    return { error: projectErr?.message ?? "Project not found" };
+  }
+
+  // Find collaborators with turn_order set (real relay), ordered by turn.
+  const { data: collaborators } = await supabase
+    .from("collaborators")
+    .select("user_id, turn_order, users(display_name)")
+    .eq("project_id", project.id)
+    .not("turn_order", "is", null)
+    .order("turn_order", { ascending: true });
+
+  // Single-user path: no other collaborator to pass to.
+  // Still lock the active section so the UI reflects the handed-off state.
+  if (!collaborators || collaborators.length < 2) {
+    if (params.activeSectionId) {
+      await supabase
+        .from("sections")
+        .update({ is_locked: true })
+        .eq("id", params.activeSectionId);
+    }
+    return { ok: true, nextName: null };
+  }
+
+  // Multi-user path: pick next in the cycle after the current user.
+  const currentIdx = collaborators.findIndex((c) => c.user_id === user.id);
+  const nextIdx = currentIdx === -1 ? 0 : (currentIdx + 1) % collaborators.length;
+  const next = collaborators[nextIdx];
+  // PostgREST returns nested selects as arrays even for 1-1 joins.
+  const usersRel = next.users as
+    | { display_name: string | null }
+    | { display_name: string | null }[]
+    | null;
+  const userRow = Array.isArray(usersRel) ? usersRel[0] : usersRel;
+  const nextName = userRow?.display_name ?? "your collaborator";
+
+  if (params.activeSectionId) {
+    await supabase
+      .from("sections")
+      .update({ is_locked: true })
+      .eq("id", params.activeSectionId);
+  }
+
+  await supabase.from("notifications").insert({
+    user_id: next.user_id,
+    type: "turn_passed",
+    project_id: project.id,
+    body: `Your turn on ${project.title}`,
+    link: `/projects/${project.id}`,
+    read: false,
+  });
+
+  return { ok: true, nextName };
+}

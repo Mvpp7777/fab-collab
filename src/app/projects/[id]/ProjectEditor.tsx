@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { aiAssist, saveSection, type AssistType } from "./actions";
+import { aiAssist, passTurn, saveSection, type AssistType } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 
 type Section = {
@@ -35,6 +36,7 @@ export default function ProjectEditor({
   displayName,
   initial,
 }: Props) {
+  const router = useRouter();
   const typeMeta = PROJECT_TYPES.find((t) => t.id === project.project_type);
   const [activeId, setActiveId] = useState<string | null>(sections[0]?.id ?? null);
   const [content, setContent] = useState<Record<string, string>>(initialContent);
@@ -43,6 +45,11 @@ export default function ProjectEditor({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  const [passing, setPassing] = useState(false);
+  const [passBanner, setPassBanner] = useState<
+    { kind: "success" | "error"; text: string } | null
+  >(null);
 
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -112,6 +119,61 @@ export default function ProjectEditor({
     setAiError(null);
   };
 
+  const handlePassTurn = async () => {
+    console.log("Pass turn clicked", {
+      passing,
+      projectId: project.id,
+      activeSectionId: activeSection?.id ?? null,
+    });
+    if (passing) return;
+    setPassing(true);
+    setPassBanner(null);
+
+    try {
+      // Flush any pending autosave on the active section before passing.
+      if (activeSection) {
+        if (debounceTimers.current[activeSection.id]) {
+          clearTimeout(debounceTimers.current[activeSection.id]);
+          delete debounceTimers.current[activeSection.id];
+        }
+        await saveSection({
+          sectionId: activeSection.id,
+          content: content[activeSection.id] ?? "",
+        });
+      }
+
+      const result = await passTurn({
+        projectId: project.id,
+        activeSectionId: activeSection?.id ?? null,
+      });
+      console.log("passTurn result", result);
+
+      if ("error" in result) {
+        setPassBanner({ kind: "error", text: result.error });
+        return;
+      }
+
+      setPassBanner({
+        kind: "success",
+        text: result.nextName
+          ? `Turn passed to ${result.nextName}.`
+          : "Turn passed successfully!",
+      });
+
+      setTimeout(() => {
+        router.refresh();
+      }, 1200);
+    } catch (e) {
+      console.error("handlePassTurn threw", e);
+      setPassBanner({
+        kind: "error",
+        text: e instanceof Error ? e.message : "Pass turn failed unexpectedly.",
+      });
+    } finally {
+      setPassing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-foam pb-24">
       {/* Top bar */}
@@ -149,14 +211,29 @@ export default function ProjectEditor({
             </div>
             <button
               type="button"
-              className="rounded-full bg-coral px-4 py-2 font-display text-sm font-semibold text-white shadow transition hover:brightness-110 active:scale-95"
+              onClick={handlePassTurn}
+              disabled={passing}
+              className="rounded-full px-4 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ backgroundColor: "#FF6B47", color: "white" }}
             >
-              Pass turn
+              {passing ? "Passing…" : "Pass turn"}
             </button>
           </div>
         </div>
       </header>
+
+      {passBanner && (
+        <div
+          className={[
+            "mx-auto mt-4 max-w-7xl rounded-xl px-5 py-3 text-sm font-medium",
+            passBanner.kind === "success"
+              ? "bg-lagoon text-white"
+              : "bg-coral/15 text-coral",
+          ].join(" ")}
+        >
+          {passBanner.text}
+        </div>
+      )}
 
       {/* Main */}
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 py-8 lg:grid-cols-[1fr_320px]">
@@ -319,10 +396,12 @@ export default function ProjectEditor({
           </div>
           <button
             type="button"
+            onClick={handlePassTurn}
+            disabled={passing}
             style={{ backgroundColor: "#FF6B47", color: "white" }}
-            className="rounded-full px-5 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95"
+            className="rounded-full px-5 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Pass turn →
+            {passing ? "Passing…" : "Pass turn →"}
           </button>
         </div>
       </footer>
