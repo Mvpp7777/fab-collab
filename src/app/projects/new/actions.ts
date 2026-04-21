@@ -36,13 +36,8 @@ export async function createProject(
   // Ensure a profile row exists so the owner_id FK is satisfied.
   // Uses the service-role admin client to bypass RLS/grant constraints on the
   // users table — profile bootstrapping is a trusted server-only operation.
-  console.log("[createProject] SERVICE_ROLE present:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  console.log("[createProject] SERVICE_ROLE length:", process.env.SUPABASE_SERVICE_ROLE_KEY?.length);
-  console.log("[createProject] SUPABASE_URL present:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-
   const admin = createAdminClient();
 
-  console.log("[createProject] BEFORE users upsert — userId:", user.id);
   const profileResult = await admin.from("users").upsert(
     {
       id: user.id,
@@ -51,12 +46,6 @@ export async function createProject(
     },
     { onConflict: "id" },
   );
-  console.log("[createProject] AFTER users upsert — result:", {
-    error: profileResult.error,
-    status: profileResult.status,
-    statusText: profileResult.statusText,
-    count: profileResult.count,
-  });
 
   if (profileResult.error) {
     return {

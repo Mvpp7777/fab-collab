@@ -31,24 +31,13 @@ export default async function DashboardPage() {
 
   let projects: ProjectRow[] = [];
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("projects")
       .select("id, title, project_type, updated_at")
       .eq("owner_id", user.id)
       .order("updated_at", { ascending: false });
-
-    console.log("[dashboard] projects query", {
-      userId: user.id,
-      userEmail: user.email,
-      rowCount: data?.length ?? 0,
-      error: error?.message ?? null,
-      errorCode: error?.code ?? null,
-      data,
-    });
-
     projects = (data ?? []) as ProjectRow[];
-  } catch (e) {
-    console.error("[dashboard] projects query threw", e);
+  } catch {
     projects = [];
   }
 
