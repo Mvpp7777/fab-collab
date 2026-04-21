@@ -13,7 +13,6 @@ import {
   saveSection,
   startCall,
   type AssistType,
-  type CallPlatform,
   type Role,
 } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
@@ -59,19 +58,12 @@ type Props = {
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
 
-const CALL_PLATFORMS: {
-  id: CallPlatform;
-  label: string;
-  emoji: string;
-  startUrl: string;
-  description: string;
-}[] = [
-  { id: "meet",     label: "Google Meet",     emoji: "📹", startUrl: "https://meet.google.com/new",        description: "Create a room, then paste the link back here" },
-  { id: "zoom",     label: "Zoom",            emoji: "🟦", startUrl: "https://zoom.us/start",              description: "Start an instant meeting, then paste the link" },
-  { id: "facetime", label: "FaceTime",        emoji: "📞", startUrl: "facetime://",                         description: "Mac/iPhone deep link" },
-  { id: "teams",    label: "Microsoft Teams", emoji: "🟪", startUrl: "https://teams.microsoft.com/l/meeting/new?subject=Fab%20Collab%20call", description: "Open a new meeting" },
-  { id: "discord",  label: "Discord",         emoji: "🟣", startUrl: "https://discord.com/channels/@me",   description: "Open Discord, then paste an invite link" },
-];
+function generateMeetCode(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let s = "";
+  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 export default function ProjectEditor({
   project,
@@ -103,7 +95,7 @@ export default function ProjectEditor({
   >(null);
 
   const [shareOpen, setShareOpen] = useState(false);
-  const [callOpen, setCallOpen] = useState(false);
+  const [meetToast, setMeetToast] = useState<string | null>(null);
 
   const [collaborators, setCollaborators] = useState(initialCollaborators);
   const [invitations, setInvitations] = useState(initialInvitations);
@@ -199,6 +191,19 @@ export default function ProjectEditor({
     }
   };
 
+  const handleCopyMeetLink = async () => {
+    const url = `https://meet.google.com/lookup/${generateMeetCode()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt("Copy this meet link:", url);
+    }
+    setMeetToast("Link copied!");
+    setTimeout(() => setMeetToast(null), 2000);
+    // Fire-and-forget notification to other collaborators.
+    void startCall({ projectId: project.id, platform: "meet", callUrl: url });
+  };
+
   return (
     <div className="min-h-screen bg-foam pb-24">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
@@ -229,10 +234,10 @@ export default function ProjectEditor({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setCallOpen(true)}
+              onClick={handleCopyMeetLink}
               className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
             >
-              📞 Start a call
+              📹 Copy meet link
             </button>
             {isOwner && (
               <button
@@ -445,12 +450,14 @@ export default function ProjectEditor({
         />
       )}
 
-      {callOpen && (
-        <StartCallModal
-          projectId={project.id}
-          collaboratorCount={Math.max(collaborators.length - 1, 0)}
-          onClose={() => setCallOpen(false)}
-        />
+      {meetToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-24 left-1/2 -translate-x-1/2 rounded-full bg-ocean px-5 py-2 font-display text-sm font-semibold text-white shadow-lg"
+        >
+          {meetToast}
+        </div>
       )}
     </div>
   );
@@ -757,155 +764,6 @@ function ShareModal({
             ))}
           </ul>
         </div>
-      )}
-    </ModalShell>
-  );
-}
-
-// =============================================================================
-// Start a call modal
-// =============================================================================
-function StartCallModal({
-  projectId,
-  collaboratorCount,
-  onClose,
-}: {
-  projectId: string;
-  collaboratorCount: number;
-  onClose: () => void;
-}) {
-  const [selected, setSelected] = useState<CallPlatform | null>(null);
-  const [pastedUrl, setPastedUrl] = useState("");
-  const [sharing, setSharing] = useState(false);
-  const [result, setResult] = useState<
-    | { kind: "success"; text: string }
-    | { kind: "error"; text: string }
-    | null
-  >(null);
-
-  const platformMeta = selected ? CALL_PLATFORMS.find((p) => p.id === selected) : null;
-
-  const pickPlatform = (id: CallPlatform) => {
-    setSelected(id);
-    setResult(null);
-    const meta = CALL_PLATFORMS.find((p) => p.id === id);
-    if (!meta) return;
-    if (id === "facetime") {
-      window.location.href = meta.startUrl;
-    } else {
-      window.open(meta.startUrl, "_blank", "noopener");
-    }
-  };
-
-  const share = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selected || sharing) return;
-    setSharing(true);
-    setResult(null);
-    try {
-      await navigator.clipboard.writeText(pastedUrl);
-    } catch {
-      // non-fatal
-    }
-    const r = await startCall({
-      projectId,
-      platform: selected,
-      callUrl: pastedUrl,
-    });
-    setSharing(false);
-    if ("error" in r) {
-      setResult({ kind: "error", text: r.error });
-      return;
-    }
-    setResult({
-      kind: "success",
-      text:
-        collaboratorCount === 0
-          ? "Link copied. No other collaborators to notify yet."
-          : `Link copied and ${r.count} ${r.count === 1 ? "collaborator" : "collaborators"} notified.`,
-    });
-  };
-
-  return (
-    <ModalShell onClose={onClose} title="Start a call">
-      <p className="text-sm text-ocean/70">
-        Pick a platform. We&rsquo;ll open it in a new tab — paste the generated
-        link back to copy and notify your collaborators.
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {CALL_PLATFORMS.map((p) => {
-          const active = selected === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => pickPlatform(p.id)}
-              aria-pressed={active}
-              className={[
-                "rounded-xl p-3 text-left transition",
-                "border-2",
-                active
-                  ? "border-lagoon bg-lagoon/5"
-                  : "border-ocean/10 bg-white hover:border-ocean/30",
-              ].join(" ")}
-            >
-              <div className="text-2xl">{p.emoji}</div>
-              <div className="mt-1 font-display text-sm font-semibold text-ocean">
-                {p.label}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {selected && platformMeta && selected !== "facetime" && (
-        <form onSubmit={share} className="mt-4 space-y-2">
-          <label className="block text-sm font-medium text-ocean">
-            Paste the {platformMeta.label} link
-          </label>
-          <input
-            type="url"
-            required
-            value={pastedUrl}
-            onChange={(e) => setPastedUrl(e.target.value)}
-            placeholder={`https://... your ${platformMeta.label} link`}
-            className="w-full rounded-lg border border-ocean/15 bg-white px-3 py-2 text-ocean outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/30"
-          />
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={sharing}
-              style={{ backgroundColor: "#FF6B47", color: "white" }}
-              className="rounded-full px-5 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {sharing ? "Sharing…" : "Copy & notify collaborators"}
-            </button>
-            <span className="text-xs text-ocean/60">
-              {collaboratorCount === 0
-                ? "No collaborators yet — link still copies."
-                : `${collaboratorCount} ${collaboratorCount === 1 ? "person" : "people"} will be notified`}
-            </span>
-          </div>
-        </form>
-      )}
-
-      {selected === "facetime" && (
-        <p className="mt-4 text-sm text-ocean/70">
-          FaceTime opened — add your collaborators from the app. (FaceTime
-          doesn&rsquo;t expose a shareable URL.)
-        </p>
-      )}
-
-      {result && (
-        <p
-          className={[
-            "mt-4 rounded-md px-3 py-2 text-sm",
-            result.kind === "success" ? "bg-lagoon/10 text-ocean" : "bg-coral/10 text-coral",
-          ].join(" ")}
-        >
-          {result.text}
-        </p>
       )}
     </ModalShell>
   );
