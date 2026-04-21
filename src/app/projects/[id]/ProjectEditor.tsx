@@ -11,6 +11,7 @@ import {
   passTurn,
   revokeInvitation,
   saveSection,
+  startCall,
   type AssistType,
   type Role,
 } from "./actions";
@@ -229,6 +230,8 @@ export default function ProjectEditor({
         }
         setCallToast("Link copied!");
         setTimeout(() => setCallToast(null), 2000);
+        // Fire-and-forget: notify every other project collaborator with the link.
+        void startCall({ projectId: project.id, platform: "meet", callUrl: url });
         return;
       }
       case "zoom":
