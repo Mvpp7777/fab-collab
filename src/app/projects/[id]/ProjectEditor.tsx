@@ -11,9 +11,7 @@ import {
   passTurn,
   revokeInvitation,
   saveSection,
-  startCall,
   type AssistType,
-  type CallPlatform,
   type Role,
 } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
@@ -67,20 +65,17 @@ function generateMeetCode(): string {
 }
 
 type CallOption = {
-  id: CallPlatform;
+  id: "meet" | "zoom" | "facetime" | "teams" | "discord";
   label: string;
   emoji: string;
-  resolveUrl: () => string;
-  // How to engage the platform: "copy" = copy only, "open" = open tab, "deeplink" = navigate
-  mode: "copy" | "open" | "deeplink";
 };
 
 const CALL_OPTIONS: CallOption[] = [
-  { id: "meet",     label: "Google Meet",     emoji: "📹", mode: "copy",     resolveUrl: () => `https://meet.google.com/lookup/${generateMeetCode()}` },
-  { id: "zoom",     label: "Zoom",            emoji: "🔵", mode: "open",     resolveUrl: () => "https://zoom.us/start/videomeeting" },
-  { id: "facetime", label: "FaceTime",        emoji: "🟣", mode: "deeplink", resolveUrl: () => "facetime://" },
-  { id: "teams",    label: "Microsoft Teams", emoji: "🟦", mode: "open",     resolveUrl: () => "https://teams.microsoft.com/l/meeting/new" },
-  { id: "discord",  label: "Discord",         emoji: "🎮", mode: "open",     resolveUrl: () => "https://discord.com/channels/@me" },
+  { id: "meet",     label: "Google Meet",     emoji: "📹" },
+  { id: "zoom",     label: "Zoom",            emoji: "🔵" },
+  { id: "facetime", label: "FaceTime",        emoji: "🟣" },
+  { id: "teams",    label: "Microsoft Teams", emoji: "🟦" },
+  { id: "discord",  label: "Discord",         emoji: "🎮" },
 ];
 
 export default function ProjectEditor({
@@ -113,8 +108,20 @@ export default function ProjectEditor({
   >(null);
 
   const [shareOpen, setShareOpen] = useState(false);
-  const [callOpen, setCallOpen] = useState(false);
+  const [callMenuOpen, setCallMenuOpen] = useState(false);
   const [callToast, setCallToast] = useState<string | null>(null);
+  const callMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!callMenuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!callMenuRef.current?.contains(e.target as Node)) {
+        setCallMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [callMenuOpen]);
 
   const [collaborators, setCollaborators] = useState(initialCollaborators);
   const [invitations, setInvitations] = useState(initialInvitations);
@@ -210,24 +217,33 @@ export default function ProjectEditor({
     }
   };
 
-  const handleCallPlatform = async (option: CallOption) => {
-    const url = option.resolveUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // Clipboard can fail silently on some browsers/permissions — we still
-      // open the tab and notify so the call still starts.
+  const handleCallOption = async (id: CallOption["id"]) => {
+    setCallMenuOpen(false);
+    switch (id) {
+      case "meet": {
+        const url = `https://meet.google.com/lookup/${generateMeetCode()}`;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          window.prompt("Copy this meet link:", url);
+        }
+        setCallToast("Link copied!");
+        setTimeout(() => setCallToast(null), 2000);
+        return;
+      }
+      case "zoom":
+        window.open("https://zoom.us/start/videomeeting", "_blank", "noopener");
+        return;
+      case "facetime":
+        window.location.href = "facetime://";
+        return;
+      case "teams":
+        window.open("https://teams.microsoft.com/l/meeting/new", "_blank", "noopener");
+        return;
+      case "discord":
+        window.open("https://discord.com/channels/@me", "_blank", "noopener");
+        return;
     }
-    if (option.mode === "open") {
-      window.open(url, "_blank", "noopener");
-    } else if (option.mode === "deeplink") {
-      window.location.href = url;
-    }
-    setCallToast("Link copied!");
-    setTimeout(() => setCallToast(null), 2000);
-    setCallOpen(false);
-    // Fire-and-forget notification to other collaborators.
-    void startCall({ projectId: project.id, platform: option.id, callUrl: url });
   };
 
   return (
@@ -258,13 +274,36 @@ export default function ProjectEditor({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCallOpen(true)}
-              className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
-            >
-              📹 Face to Face
-            </button>
+            <div className="relative" ref={callMenuRef}>
+              <button
+                type="button"
+                onClick={() => setCallMenuOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={callMenuOpen}
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
+              >
+                Face to Face 📹
+              </button>
+              {callMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-xl border border-ocean/10 bg-white py-1 shadow-lg"
+                >
+                  {CALL_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      role="menuitem"
+                      type="button"
+                      onClick={() => handleCallOption(opt.id)}
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-ocean transition hover:bg-foam"
+                    >
+                      <span aria-hidden className="text-base">{opt.emoji}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {isOwner && (
               <button
                 type="button"
@@ -476,13 +515,6 @@ export default function ProjectEditor({
         />
       )}
 
-      {callOpen && (
-        <FaceToFaceModal
-          onClose={() => setCallOpen(false)}
-          onPick={handleCallPlatform}
-        />
-      )}
-
       {callToast && (
         <div
           role="status"
@@ -496,41 +528,6 @@ export default function ProjectEditor({
   );
 }
 
-// =============================================================================
-// Face to Face modal
-// =============================================================================
-function FaceToFaceModal({
-  onClose,
-  onPick,
-}: {
-  onClose: () => void;
-  onPick: (option: CallOption) => void;
-}) {
-  return (
-    <ModalShell onClose={onClose} title="Face to Face">
-      <p className="rounded-md bg-lagoon/10 px-3 py-2 text-sm text-ocean">
-        All platforms require the other person to have an account. Share the
-        link with your collaborator after starting.
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {CALL_OPTIONS.map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => onPick(opt)}
-            className="rounded-xl border-2 border-ocean/10 bg-white p-3 text-left transition hover:border-lagoon hover:bg-lagoon/5"
-          >
-            <div className="text-2xl">{opt.emoji}</div>
-            <div className="mt-1 font-display text-sm font-semibold text-ocean">
-              {opt.label}
-            </div>
-          </button>
-        ))}
-      </div>
-    </ModalShell>
-  );
-}
 
 function ToolbarButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
