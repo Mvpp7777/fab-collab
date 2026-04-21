@@ -16,6 +16,7 @@ import {
   type Role,
 } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
+import { FALLBACK_COLOR } from "@/lib/colors";
 
 type Section = { id: string; title: string | null; position: number };
 
@@ -31,6 +32,7 @@ export type CollaboratorEntry = {
   user_id: string;
   role: string;
   turn_order: number | null;
+  color: string;
   display_name: string | null;
   email: string | null;
   isOwner: boolean;
@@ -44,16 +46,24 @@ export type PendingInvitation = {
   expires_at: string;
 };
 
+export type LastEditor = { name: string; color: string };
+
 type Props = {
   project: Project;
   sections: Section[];
   initialContent: Record<string, string>;
   displayName: string;
   initial: string;
+  myColor: string;
   isOwner: boolean;
   collaborators: CollaboratorEntry[];
   pendingInvitations: PendingInvitation[];
   origin: string;
+  currentHolderId: string | null;
+  currentHolderName: string;
+  currentHolderColor: string;
+  isMyTurn: boolean;
+  lastEditorBySection: Record<string, LastEditor | null>;
 };
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -85,10 +95,16 @@ export default function ProjectEditor({
   initialContent,
   displayName,
   initial,
+  myColor,
   isOwner,
   collaborators: initialCollaborators,
   pendingInvitations: initialInvitations,
   origin,
+  currentHolderId,
+  currentHolderName,
+  currentHolderColor,
+  isMyTurn,
+  lastEditorBySection,
 }: Props) {
   const router = useRouter();
   const typeMeta = PROJECT_TYPES.find((t) => t.id === project.project_type);
@@ -126,7 +142,6 @@ export default function ProjectEditor({
 
   const [collaborators, setCollaborators] = useState(initialCollaborators);
   const [invitations, setInvitations] = useState(initialInvitations);
-
   useEffect(() => setCollaborators(initialCollaborators), [initialCollaborators]);
   useEffect(() => setInvitations(initialInvitations), [initialInvitations]);
 
@@ -145,6 +160,7 @@ export default function ProjectEditor({
   }, []);
 
   const handleChange = (sectionId: string, text: string) => {
+    if (!isMyTurn) return;
     setContent((c) => ({ ...c, [sectionId]: text }));
     setSaveState((s) => ({ ...s, [sectionId]: "idle" }));
     triggerSave(sectionId, text);
@@ -169,7 +185,7 @@ export default function ProjectEditor({
   };
 
   const useSuggestion = () => {
-    if (!activeSection || !aiSuggestion) return;
+    if (!activeSection || !aiSuggestion || !isMyTurn) return;
     const current = content[activeSection.id] ?? "";
     const joined = current.trim().length > 0 ? `${current}\n\n${aiSuggestion}` : aiSuggestion;
     handleChange(activeSection.id, joined);
@@ -182,7 +198,7 @@ export default function ProjectEditor({
   };
 
   const handlePassTurn = async () => {
-    if (passing) return;
+    if (passing || !isMyTurn) return;
     setPassing(true);
     setPassBanner(null);
     try {
@@ -193,10 +209,7 @@ export default function ProjectEditor({
         }
         await saveSection({ sectionId: activeSection.id, content: content[activeSection.id] ?? "" });
       }
-      const result = await passTurn({
-        projectId: project.id,
-        activeSectionId: activeSection?.id ?? null,
-      });
+      const result = await passTurn({ projectId: project.id });
       if ("error" in result) {
         setPassBanner({ kind: "error", text: result.error });
         return;
@@ -230,7 +243,6 @@ export default function ProjectEditor({
         }
         setCallToast("Link copied!");
         setTimeout(() => setCallToast(null), 2000);
-        // Fire-and-forget: notify every other project collaborator with the link.
         void startCall({ projectId: project.id, platform: "meet", callUrl: url });
         return;
       }
@@ -318,14 +330,16 @@ export default function ProjectEditor({
             )}
             <div
               title={displayName}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-lagoon font-display text-sm font-bold text-white ring-2 ring-white"
+              style={{ backgroundColor: myColor }}
+              className="flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-bold text-white ring-2 ring-white"
             >
               {initial}
             </div>
             <button
               type="button"
               onClick={handlePassTurn}
-              disabled={passing}
+              disabled={passing || !isMyTurn}
+              title={!isMyTurn ? `Waiting for ${currentHolderName}` : undefined}
               className="rounded-full px-4 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ backgroundColor: "#FF6B47", color: "white" }}
             >
@@ -352,28 +366,42 @@ export default function ProjectEditor({
           {sections.map((s) => {
             const active = s.id === activeSection?.id;
             const state = saveState[s.id] ?? "idle";
+            const lastEditor = lastEditorBySection[s.id];
+            const borderColor = isMyTurn
+              ? active ? myColor : "transparent"
+              : active ? currentHolderColor : "transparent";
+            const pillText = isMyTurn
+              ? active ? "Your turn" : "Locked"
+              : `${currentHolderName}'s turn`;
+            const pillStyle: React.CSSProperties = isMyTurn && active
+              ? { backgroundColor: myColor, color: "white" }
+              : isMyTurn
+                ? { backgroundColor: "rgba(26,46,46,0.1)", color: "rgba(26,46,46,0.6)" }
+                : { backgroundColor: "rgba(26,46,46,0.1)", color: "rgba(26,46,46,0.7)" };
             return (
               <article
                 key={s.id}
                 onClick={() => setActiveId(s.id)}
-                className={[
-                  "cursor-pointer rounded-2xl bg-white p-5 shadow-sm transition",
-                  active
-                    ? "border-2 border-lagoon ring-2 ring-lagoon/20"
-                    : "border-2 border-transparent",
-                ].join(" ")}
+                style={{
+                  borderColor,
+                  boxShadow:
+                    active
+                      ? `0 0 0 2px ${
+                          isMyTurn ? myColor : currentHolderColor
+                        }33`
+                      : undefined,
+                }}
+                className="cursor-pointer rounded-2xl border-2 bg-white p-5 shadow-sm transition"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wider text-lagoon">
                     {s.title ?? `Section ${s.position + 1}`}
                   </span>
                   <span
-                    className={[
-                      "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                      active ? "bg-lagoon text-white" : "bg-ocean/10 text-ocean/60",
-                    ].join(" ")}
+                    style={pillStyle}
+                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
                   >
-                    {active ? "Your turn" : "Locked"}
+                    {pillText}
                   </span>
                 </div>
                 <textarea
@@ -381,15 +409,22 @@ export default function ProjectEditor({
                   onChange={(e) => handleChange(s.id, e.target.value)}
                   onFocus={() => setActiveId(s.id)}
                   onClick={(e) => e.stopPropagation()}
+                  readOnly={!isMyTurn}
                   rows={5}
-                  placeholder={active ? "Start writing..." : "Click to activate"}
-                  className="mt-3 w-full resize-y rounded-lg border border-ocean/10 bg-foam/50 px-3 py-2 text-ocean outline-none transition placeholder:text-ocean/40 focus:border-lagoon focus:ring-2 focus:ring-lagoon/30"
+                  placeholder={isMyTurn ? (active ? "Start writing..." : "Click to activate") : `Waiting for ${currentHolderName}...`}
+                  className="mt-3 w-full resize-y rounded-lg border border-ocean/10 bg-foam/50 px-3 py-2 text-ocean outline-none transition placeholder:text-ocean/40 focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 read-only:cursor-not-allowed read-only:bg-ocean/5"
                 />
-                <div className="mt-3 flex items-center justify-between text-xs text-ocean/50">
-                  <span>Last edited by {displayName}</span>
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  {lastEditor ? (
+                    <span style={{ color: lastEditor.color }} className="font-medium">
+                      Last edited by {lastEditor.name}
+                    </span>
+                  ) : (
+                    <span className="text-ocean/40">Not yet edited</span>
+                  )}
                   <span>
-                    {state === "saving" && "Saving…"}
-                    {state === "saved" && "Saved"}
+                    {state === "saving" && <span className="text-ocean/50">Saving…</span>}
+                    {state === "saved" && <span className="text-ocean/50">Saved</span>}
                     {state === "error" && <span className="text-coral">Save failed</span>}
                   </span>
                 </div>
@@ -400,16 +435,13 @@ export default function ProjectEditor({
 
         {/* Right: sidebar */}
         <aside className="space-y-4">
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-            <div className="text-xs font-semibold uppercase tracking-wider text-lagoon">Relay status</div>
-            <div className="mt-2 font-display text-lg font-bold text-ocean">Your turn</div>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ocean/10">
-              <div className="h-full w-1/3 rounded-full bg-lagoon" />
-            </div>
-            <p className="mt-2 text-xs text-ocean/60">
-              Section {sections.findIndex((s) => s.id === activeSection?.id) + 1} of {sections.length}
-            </p>
-          </div>
+          <RelayStatusPanel
+            collaborators={collaborators}
+            currentHolderId={currentHolderId}
+            currentHolderName={currentHolderName}
+            currentHolderColor={currentHolderColor}
+            isMyTurn={isMyTurn}
+          />
 
           <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
             <div className="flex items-center justify-between bg-lagoon px-5 py-2.5">
@@ -432,7 +464,8 @@ export default function ProjectEditor({
                 <button
                   type="button"
                   onClick={useSuggestion}
-                  disabled={!aiSuggestion}
+                  disabled={!aiSuggestion || !isMyTurn}
+                  title={!isMyTurn ? `Waiting for ${currentHolderName}` : undefined}
                   className="rounded-full bg-lagoon px-4 py-1.5 font-display text-xs font-semibold text-white shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Use it
@@ -453,17 +486,14 @@ export default function ProjectEditor({
             isOwner={isOwner}
             collaborators={collaborators}
             invitations={invitations}
+            currentHolderId={currentHolderId}
             onChangeCollabRole={async (id, role) => {
-              setCollaborators((list) =>
-                list.map((c) => (c.id === id ? { ...c, role } : c)),
-              );
+              setCollaborators((list) => list.map((c) => (c.id === id ? { ...c, role } : c)));
               const r = await changeCollaboratorRole({ collaboratorId: id, role });
               if ("error" in r) router.refresh();
             }}
             onChangeInviteRole={async (id, role) => {
-              setInvitations((list) =>
-                list.map((i) => (i.id === id ? { ...i, role } : i)),
-              );
+              setInvitations((list) => list.map((i) => (i.id === id ? { ...i, role } : i)));
               const r = await changeInvitationRole({ invitationId: id, role });
               if ("error" in r) router.refresh();
             }}
@@ -489,7 +519,8 @@ export default function ProjectEditor({
           <button
             type="button"
             onClick={handlePassTurn}
-            disabled={passing}
+            disabled={passing || !isMyTurn}
+            title={!isMyTurn ? `Waiting for ${currentHolderName}` : undefined}
             style={{ backgroundColor: "#FF6B47", color: "white" }}
             className="rounded-full px-5 py-2 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -531,7 +562,6 @@ export default function ProjectEditor({
   );
 }
 
-
 function ToolbarButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
     <button
@@ -546,12 +576,89 @@ function ToolbarButton({ label, onClick, disabled }: { label: string; onClick: (
 }
 
 // =============================================================================
+// Relay status panel — ordered turn list with per-collaborator colors
+// =============================================================================
+function RelayStatusPanel({
+  collaborators,
+  currentHolderId,
+  currentHolderName,
+  currentHolderColor,
+  isMyTurn,
+}: {
+  collaborators: CollaboratorEntry[];
+  currentHolderId: string | null;
+  currentHolderName: string;
+  currentHolderColor: string;
+  isMyTurn: boolean;
+}) {
+  const currentIdx = collaborators.findIndex((c) => c.user_id === currentHolderId);
+  const nextIdx = collaborators.length > 0
+    ? (currentIdx === -1 ? 0 : (currentIdx + 1) % collaborators.length)
+    : -1;
+
+  const progress =
+    collaborators.length > 0 && currentIdx >= 0
+      ? ((currentIdx + 1) / collaborators.length) * 100
+      : 0;
+
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="text-xs font-semibold uppercase tracking-wider text-lagoon">
+        Relay status
+      </div>
+      <div
+        className="mt-2 font-display text-lg font-bold"
+        style={{ color: currentHolderColor }}
+      >
+        {isMyTurn ? "Your turn" : `${currentHolderName}'s turn`}
+      </div>
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ocean/10">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${progress}%`, backgroundColor: currentHolderColor }}
+        />
+      </div>
+
+      <ul className="mt-4 space-y-2">
+        {collaborators.map((c, i) => {
+          const name = c.display_name?.trim() || c.email || "Someone";
+          const initial = name.charAt(0).toUpperCase();
+          let label = "Waiting";
+          if (i === currentIdx) label = "Your turn";
+          else if (i === nextIdx) label = "Next up";
+          return (
+            <li key={c.id} className="flex items-center gap-2.5">
+              <div
+                style={{ backgroundColor: c.color ?? FALLBACK_COLOR }}
+                className="flex h-7 w-7 flex-none items-center justify-center rounded-full font-display text-xs font-bold text-white"
+              >
+                {initial}
+              </div>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-ocean">
+                {i + 1}. {name}
+              </span>
+              <span
+                style={{ color: c.color ?? FALLBACK_COLOR }}
+                className="flex-none text-xs font-semibold"
+              >
+                {label}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+// =============================================================================
 // Collaborators sidebar panel
 // =============================================================================
 function CollaboratorsPanel({
   isOwner,
   collaborators,
   invitations,
+  currentHolderId,
   onChangeCollabRole,
   onChangeInviteRole,
   onRevoke,
@@ -560,6 +667,7 @@ function CollaboratorsPanel({
   isOwner: boolean;
   collaborators: CollaboratorEntry[];
   invitations: PendingInvitation[];
+  currentHolderId: string | null;
   onChangeCollabRole: (id: string, role: Role) => void;
   onChangeInviteRole: (id: string, role: Role) => void;
   onRevoke: (id: string) => void;
@@ -584,16 +692,23 @@ function CollaboratorsPanel({
 
       <ul className="mt-3 space-y-2">
         {collaborators.map((c) => {
-          const name = c.display_name?.trim() || c.email || "Unknown";
+          const name = c.display_name?.trim() || c.email || "Someone";
           const initial = name.charAt(0).toUpperCase();
+          const editing = c.user_id === currentHolderId;
           return (
             <li key={c.id} className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lagoon font-display text-xs font-bold text-white">
+              <div
+                style={{ backgroundColor: c.color ?? FALLBACK_COLOR }}
+                className="flex h-8 w-8 items-center justify-center rounded-full font-display text-xs font-bold text-white"
+              >
                 {initial}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-ocean">
-                  {name} {c.isOwner && <span className="text-xs font-normal text-ocean/50">(owner)</span>}
+                  {name}{" "}
+                  {c.isOwner && (
+                    <span className="text-xs font-normal text-ocean/50">(owner)</span>
+                  )}
                 </div>
                 {isOwner && !c.isOwner ? (
                   <RoleSelect
@@ -601,7 +716,12 @@ function CollaboratorsPanel({
                     onChange={(r) => onChangeCollabRole(c.id, r)}
                   />
                 ) : (
-                  <div className="text-xs font-medium capitalize text-lagoon">{c.role}</div>
+                  <div
+                    style={{ color: editing ? (c.color ?? FALLBACK_COLOR) : undefined }}
+                    className="text-xs font-medium capitalize text-lagoon"
+                  >
+                    {editing ? "editing" : c.role}
+                  </div>
                 )}
               </div>
             </li>
@@ -664,7 +784,7 @@ function RoleSelect({ role, onChange }: { role: Role; onChange: (r: Role) => voi
 }
 
 // =============================================================================
-// Share modal
+// Share modal (unchanged from prior)
 // =============================================================================
 function ShareModal({
   projectId,
@@ -714,7 +834,6 @@ function ShareModal({
       url: result.inviteUrl,
       emailed: result.emailSent,
     });
-    // Optimistically add a pending invite; server-side pull happens on refresh.
     onInvited({
       id: crypto.randomUUID(),
       email: email.trim().toLowerCase(),

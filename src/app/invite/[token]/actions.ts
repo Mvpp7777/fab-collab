@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { colorForTurnOrder } from "@/lib/colors";
 
 export type AcceptResult = { ok: true; projectId: string } | { error: string };
 
@@ -57,6 +58,7 @@ export async function acceptInvitation(params: {
     user_id: user.id,
     role: invitation.role,
     turn_order: nextOrder,
+    color: colorForTurnOrder(nextOrder),
     invited_by: null,
   });
   if (collabErr && !collabErr.message.toLowerCase().includes("duplicate")) {

@@ -5,20 +5,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import ProjectEditor, {
   type CollaboratorEntry,
   type PendingInvitation,
+  type LastEditor,
 } from "./ProjectEditor";
 import type { ProjectTypeId } from "@/lib/projectTypes";
+import { FALLBACK_COLOR, colorForTurnOrder } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
-type SectionRow = {
-  id: string;
-  title: string | null;
-  position: number;
-};
+type SectionRow = { id: string; title: string | null; position: number };
 
 type SnapshotRow = {
   section_id: string;
   content_text: string;
+  saved_by: string | null;
   created_at: string;
 };
 
@@ -44,10 +43,9 @@ export default async function ProjectPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Use admin client for the server-side render path so we don't depend on
-  // the caller having RLS SELECT on projects/sections/snapshots (newly-joined
-  // collaborators otherwise hit 404 before DB policies are in place).
-  // Access is still gated below by an explicit owner-or-collaborator check.
+  // Admin client for server-render reads so the page works regardless of
+  // which RLS migrations the user has applied. Access is gated below by an
+  // explicit owner-or-collaborator check.
   const admin = createAdminClient();
 
   const { data: project } = await admin
@@ -80,38 +78,41 @@ export default async function ProjectPage({
 
   const { data: snapshotsData } = await admin
     .from("content_snapshots")
-    .select("section_id, content_text, created_at")
+    .select("section_id, content_text, saved_by, created_at")
     .in(
       "section_id",
       sections.map((s) => s.id),
     )
     .order("created_at", { ascending: false });
 
-  const latestBySection: Record<string, string> = {};
+  const latestBySection: Record<string, SnapshotRow> = {};
   for (const snap of (snapshotsData ?? []) as SnapshotRow[]) {
     if (!(snap.section_id in latestBySection)) {
-      latestBySection[snap.section_id] = snap.content_text;
+      latestBySection[snap.section_id] = snap;
     }
   }
   const initialContent: Record<string, string> = Object.fromEntries(
-    sections.map((s) => [s.id, latestBySection[s.id] ?? ""]),
+    sections.map((s) => [s.id, latestBySection[s.id]?.content_text ?? ""]),
   );
 
+  // Relay state — who currently holds the turn
+  const { data: relayStateRow } = await admin
+    .from("relay_state")
+    .select("current_holder")
+    .eq("project_id", project.id)
+    .maybeSingle();
+
+  const currentHolderId = relayStateRow?.current_holder ?? project.owner_id;
+  const isMyTurn = currentHolderId === user.id;
+
+  // Collaborators (includes color + turn_order from DB)
   const { data: collabRows } = await admin
     .from("collaborators")
-    .select("id, user_id, role, turn_order, users(display_name)")
+    .select("id, user_id, role, turn_order, color, users(display_name)")
     .eq("project_id", project.id)
     .order("turn_order", { ascending: true, nullsFirst: false });
 
   const userIds = (collabRows ?? []).map((c) => c.user_id);
-  const { data: authUsers } =
-    userIds.length > 0
-      ? await admin
-          .from("users")
-          .select("id, display_name")
-          .in("id", userIds)
-      : { data: [] as Array<{ id: string; display_name: string | null }> };
-  // Fetch emails via auth admin (RLS-bypass path).
   const emailById: Record<string, string | null> = {};
   for (const id of userIds) {
     try {
@@ -121,19 +122,53 @@ export default async function ProjectPage({
       emailById[id] = null;
     }
   }
-
   const nameById: Record<string, string | null> = {};
-  for (const r of authUsers ?? []) nameById[r.id] = r.display_name;
+  for (const r of collabRows ?? []) {
+    const rel = r.users as
+      | { display_name: string | null }
+      | { display_name: string | null }[]
+      | null;
+    const row = Array.isArray(rel) ? rel[0] : rel;
+    nameById[r.user_id] = row?.display_name ?? null;
+  }
 
   const collaborators: CollaboratorEntry[] = (collabRows ?? []).map((c) => ({
     id: c.id,
     user_id: c.user_id,
     role: String(c.role ?? "editor"),
     turn_order: c.turn_order,
+    color:
+      (typeof c.color === "string" && c.color.length > 0
+        ? c.color
+        : colorForTurnOrder(c.turn_order)) || FALLBACK_COLOR,
     display_name: nameById[c.user_id] ?? null,
     email: emailById[c.user_id] ?? null,
     isOwner: c.user_id === project.owner_id,
   }));
+
+  const currentHolder = collaborators.find((c) => c.user_id === currentHolderId);
+  const currentHolderName =
+    currentHolder?.display_name?.trim() ||
+    currentHolder?.email ||
+    (currentHolderId === user.id ? "you" : "a collaborator");
+  const currentHolderColor = currentHolder?.color ?? FALLBACK_COLOR;
+
+  // Last editor per section
+  const lastEditorBySection: Record<string, LastEditor | null> = {};
+  for (const s of sections) {
+    const savedById = latestBySection[s.id]?.saved_by ?? null;
+    if (!savedById) {
+      lastEditorBySection[s.id] = null;
+      continue;
+    }
+    const editor = collaborators.find((c) => c.user_id === savedById);
+    lastEditorBySection[s.id] = editor
+      ? {
+          name: editor.display_name?.trim() || editor.email || "Someone",
+          color: editor.color,
+        }
+      : null;
+  }
 
   const { data: inviteRows } = await admin
     .from("invitations")
@@ -157,6 +192,8 @@ export default async function ProjectPage({
     user.email ||
     "You";
   const initial = displayName.charAt(0).toUpperCase();
+  const myColor =
+    collaborators.find((c) => c.user_id === user.id)?.color ?? FALLBACK_COLOR;
 
   return (
     <ProjectEditor
@@ -170,10 +207,16 @@ export default async function ProjectPage({
       initialContent={initialContent}
       displayName={displayName}
       initial={initial}
+      myColor={myColor}
       isOwner={isOwner}
       collaborators={collaborators}
       pendingInvitations={pendingInvitations}
       origin={computeOrigin()}
+      currentHolderId={currentHolderId}
+      currentHolderName={currentHolderName}
+      currentHolderColor={currentHolderColor}
+      isMyTurn={isMyTurn}
+      lastEditorBySection={lastEditorBySection}
     />
   );
 }

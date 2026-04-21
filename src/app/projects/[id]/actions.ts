@@ -99,7 +99,6 @@ export type PassTurnResult =
 
 export async function passTurn(params: {
   projectId: string;
-  activeSectionId: string | null;
 }): Promise<PassTurnResult> {
   const supabase = createClient();
   const {
@@ -116,7 +115,21 @@ export async function passTurn(params: {
     return { error: projectErr?.message ?? "Project not found" };
   }
 
-  // Find collaborators with turn_order set (real relay), ordered by turn.
+  // Gate: only the current turn holder may pass.
+  const { data: state } = await supabase
+    .from("relay_state")
+    .select("current_holder")
+    .eq("project_id", project.id)
+    .maybeSingle();
+  if (!state) {
+    return {
+      error: "Relay state missing for this project. Run migration 009.",
+    };
+  }
+  if (state.current_holder !== user.id) {
+    return { error: "It's not your turn." };
+  }
+
   const { data: collaborators } = await supabase
     .from("collaborators")
     .select("user_id, turn_order, users(display_name)")
@@ -124,23 +137,14 @@ export async function passTurn(params: {
     .not("turn_order", "is", null)
     .order("turn_order", { ascending: true });
 
-  // Single-user path: no other collaborator to pass to.
-  // Still lock the active section so the UI reflects the handed-off state.
+  // Single-user path: no one to pass to — keep same holder, return no-op success.
   if (!collaborators || collaborators.length < 2) {
-    if (params.activeSectionId) {
-      await supabase
-        .from("sections")
-        .update({ is_locked: true })
-        .eq("id", params.activeSectionId);
-    }
     return { ok: true, nextName: null };
   }
 
-  // Multi-user path: pick next in the cycle after the current user.
   const currentIdx = collaborators.findIndex((c) => c.user_id === user.id);
   const nextIdx = currentIdx === -1 ? 0 : (currentIdx + 1) % collaborators.length;
   const next = collaborators[nextIdx];
-  // PostgREST returns nested selects as arrays even for 1-1 joins.
   const usersRel = next.users as
     | { display_name: string | null }
     | { display_name: string | null }[]
@@ -148,12 +152,12 @@ export async function passTurn(params: {
   const userRow = Array.isArray(usersRel) ? usersRel[0] : usersRel;
   const nextName = userRow?.display_name ?? "your collaborator";
 
-  if (params.activeSectionId) {
-    await supabase
-      .from("sections")
-      .update({ is_locked: true })
-      .eq("id", params.activeSectionId);
-  }
+  // Advance relay_state to the next holder.
+  const { error: updateErr } = await supabase
+    .from("relay_state")
+    .update({ current_holder: next.user_id })
+    .eq("project_id", project.id);
+  if (updateErr) return { error: `Relay update: ${updateErr.message}` };
 
   await supabase.from("notifications").insert({
     user_id: next.user_id,

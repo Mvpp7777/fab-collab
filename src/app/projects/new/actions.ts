@@ -95,7 +95,14 @@ export async function createProject(
     user_id: user.id,
     role: "editor",
     turn_order: 1,
+    color: "#0BBFBF", // first palette entry
     invited_by: user.id,
+  });
+
+  // Initialize relay state with the owner holding the turn.
+  await supabase.from("relay_state").insert({
+    project_id: project.id,
+    current_holder: user.id,
   });
 
   redirect(`/projects/${project.id}`);
