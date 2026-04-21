@@ -1,7 +1,9 @@
 "use server";
 
 import Anthropic from "@anthropic-ai/sdk";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { sendInviteEmail } from "@/lib/resend";
 
 export type AssistType = "suggest-line" | "rhyme" | "rewrite" | "unblock";
 
@@ -163,4 +165,239 @@ export async function passTurn(params: {
   });
 
   return { ok: true, nextName };
+}
+
+// =============================================================================
+// Invitations
+// =============================================================================
+
+function getOrigin(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+  const h = headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  if (host) return `${proto}://${host}`;
+  return "https://fabcollab.vercel.app";
+}
+
+export type Role = "editor" | "commenter" | "viewer";
+
+export type InviteResult =
+  | {
+      ok: true;
+      inviteUrl: string;
+      emailSent: boolean;
+      emailNote: string | null;
+    }
+  | { error: string };
+
+export async function inviteCollaborator(params: {
+  projectId: string;
+  email: string;
+  role: Role;
+}): Promise<InviteResult> {
+  const email = params.email.trim().toLowerCase();
+  const role: Role =
+    params.role === "editor" || params.role === "commenter" || params.role === "viewer"
+      ? params.role
+      : "editor";
+  if (!email || !email.includes("@")) {
+    return { error: "Enter a valid email address." };
+  }
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project, error: projectErr } = await supabase
+    .from("projects")
+    .select("id, title, owner_id")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (projectErr || !project) {
+    return { error: projectErr?.message ?? "Project not found" };
+  }
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can invite collaborators." };
+  }
+
+  const { data: invitation, error: inviteErr } = await supabase
+    .from("invitations")
+    .insert({
+      project_id: project.id,
+      invited_by: user.id,
+      email,
+      role,
+    })
+    .select("token")
+    .single();
+  if (inviteErr || !invitation) {
+    return { error: `Invite: ${inviteErr?.message ?? "unknown error"}` };
+  }
+
+  const inviteUrl = `${getOrigin()}/invite/${invitation.token}`;
+
+  const inviterName =
+    ((user.user_metadata?.display_name as string | undefined) ?? "").trim() ||
+    user.email ||
+    "Your collaborator";
+
+  const sendResult = await sendInviteEmail({
+    to: email,
+    projectTitle: project.title,
+    inviterName,
+    inviteUrl,
+  });
+
+  return {
+    ok: true,
+    inviteUrl,
+    emailSent: sendResult.ok,
+    emailNote: sendResult.ok ? null : sendResult.message,
+  };
+}
+
+export type RevokeResult = { ok: true } | { error: string };
+
+export async function revokeInvitation(params: {
+  invitationId: string;
+}): Promise<RevokeResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("invitations")
+    .delete()
+    .eq("id", params.invitationId);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+export type ChangeRoleResult = { ok: true } | { error: string };
+
+export async function changeCollaboratorRole(params: {
+  collaboratorId: string;
+  role: Role;
+}): Promise<ChangeRoleResult> {
+  const role: Role =
+    params.role === "editor" || params.role === "commenter" || params.role === "viewer"
+      ? params.role
+      : "editor";
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("collaborators")
+    .update({ role })
+    .eq("id", params.collaboratorId);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+export async function changeInvitationRole(params: {
+  invitationId: string;
+  role: Role;
+}): Promise<ChangeRoleResult> {
+  const role: Role =
+    params.role === "editor" || params.role === "commenter" || params.role === "viewer"
+      ? params.role
+      : "editor";
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("invitations")
+    .update({ role })
+    .eq("id", params.invitationId);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+// =============================================================================
+// Start a call
+// =============================================================================
+
+export type CallPlatform = "meet" | "zoom" | "facetime" | "teams" | "discord";
+
+export type StartCallResult = { ok: true; count: number } | { error: string };
+
+export async function startCall(params: {
+  projectId: string;
+  platform: CallPlatform;
+  callUrl: string;
+}): Promise<StartCallResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, title, owner_id")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found" };
+
+  // Only owner or a collaborator can start a call.
+  const { data: membership } = await supabase
+    .from("collaborators")
+    .select("id")
+    .eq("project_id", project.id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!membership && project.owner_id !== user.id) {
+    return { error: "You are not a collaborator on this project." };
+  }
+
+  const platformLabel: Record<CallPlatform, string> = {
+    meet: "Google Meet",
+    zoom: "Zoom",
+    facetime: "FaceTime",
+    teams: "Microsoft Teams",
+    discord: "Discord",
+  };
+  const label = platformLabel[params.platform];
+  const inviterName =
+    ((user.user_metadata?.display_name as string | undefined) ?? "").trim() ||
+    user.email ||
+    "A collaborator";
+
+  // Fetch all other collaborators of this project.
+  const { data: others } = await supabase
+    .from("collaborators")
+    .select("user_id")
+    .eq("project_id", project.id)
+    .neq("user_id", user.id);
+
+  const rows =
+    others?.map((o) => ({
+      user_id: o.user_id,
+      type: "call_started",
+      project_id: project.id,
+      body: `${inviterName} started a ${label} call on ${project.title}`,
+      link: params.callUrl || `/projects/${project.id}`,
+      read: false,
+    })) ?? [];
+
+  let count = 0;
+  if (rows.length > 0) {
+    const { error } = await supabase.from("notifications").insert(rows);
+    if (error) return { error: error.message };
+    count = rows.length;
+  }
+
+  return { ok: true, count };
 }

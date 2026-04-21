@@ -1,13 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  const rawNext = searchParams.get("next") ?? "";
+  const nextPath =
+    rawNext.startsWith("/") && !rawNext.startsWith("//")
+      ? rawNext
+      : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +51,7 @@ export default function SignupPage() {
     }
 
     if (data.session) {
-      router.push("/dashboard");
+      router.push(nextPath);
       router.refresh();
     } else {
       setInfo("Check your email to confirm your account, then log in.");

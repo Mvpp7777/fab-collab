@@ -1,13 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  const rawNext = searchParams.get("next") ?? "";
+  const nextPath =
+    rawNext.startsWith("/") && !rawNext.startsWith("//")
+      ? rawNext
+      : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +43,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(nextPath);
     router.refresh();
   }
 
@@ -96,7 +111,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-ocean/70">
             New to Fab Collab?{" "}
-            <Link href="/auth/signup" className="font-semibold text-lagoon hover:underline">
+            <Link
+              href={`/auth/signup${nextPath !== "/dashboard" ? `?next=${encodeURIComponent(nextPath)}` : ""}`}
+              className="font-semibold text-lagoon hover:underline"
+            >
               Sign up
             </Link>
           </p>

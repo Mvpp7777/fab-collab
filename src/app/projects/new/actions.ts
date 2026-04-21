@@ -89,5 +89,14 @@ export async function createProject(
     .insert(sectionRows);
   if (sectionsErr) return { error: `Sections: ${sectionsErr.message}` };
 
+  // Seed the owner as the first collaborator so Pass-turn cycling has a head.
+  await supabase.from("collaborators").insert({
+    project_id: project.id,
+    user_id: user.id,
+    role: "editor",
+    turn_order: 1,
+    invited_by: user.id,
+  });
+
   redirect(`/projects/${project.id}`);
 }
