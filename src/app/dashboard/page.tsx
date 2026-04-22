@@ -64,6 +64,12 @@ export default async function DashboardPage() {
               Discover
             </Link>
             <Link
+              href="/industry"
+              className="hidden text-sm font-medium text-ocean/70 transition hover:text-ocean sm:inline"
+            >
+              Industry
+            </Link>
+            <Link
               href="/projects/new"
               className="rounded-full bg-coral px-4 py-2 font-display text-sm font-semibold text-white shadow transition hover:brightness-110 active:scale-95"
             >

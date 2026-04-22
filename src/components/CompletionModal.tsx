@@ -5,6 +5,7 @@ import {
   markProjectComplete,
   setProjectPublic,
 } from "@/app/projects/[id]/actions";
+import { generateCertificatePdf } from "@/lib/certificate";
 
 export type CompletionContributor = {
   name: string;
@@ -156,6 +157,27 @@ export default function CompletionModal({
     setExporting(null);
   };
 
+  const downloadCertificate = async () => {
+    setExporting("pdf");
+    try {
+      const blob = await generateCertificatePdf({
+        projectTitle,
+        contributors: contributors.map((c) => ({ name: c.name, color: c.color })),
+        completedAtIso: completedAt,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeFilename}-certificate.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(null);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ocean/40 px-4"
@@ -226,11 +248,19 @@ export default function CompletionModal({
               </button>
               <button
                 type="button"
+                onClick={downloadCertificate}
+                disabled={exporting !== null}
+                className="rounded-full border-2 border-lagoon bg-white px-5 py-2 font-display text-sm font-semibold text-lagoon transition hover:bg-lagoon hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {exporting === "pdf" ? "Generating…" : "🏆 Download Certificate"}
+              </button>
+              <button
+                type="button"
                 onClick={downloadText}
                 disabled={exporting !== null}
                 className="rounded-full border border-ocean/15 bg-white px-5 py-2 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {exporting ? "Downloading…" : "Download"}
+                {exporting === "txt" ? "Downloading…" : "Download"}
               </button>
             </div>
 

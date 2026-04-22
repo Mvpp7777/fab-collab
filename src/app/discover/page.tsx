@@ -92,6 +92,12 @@ export default async function DiscoverIndex() {
           </Link>
           <div className="flex items-center gap-4">
             <Link
+              href="/industry"
+              className="text-sm font-medium text-ocean/70 hover:text-ocean"
+            >
+              Industry
+            </Link>
+            <Link
               href="/dashboard"
               className="text-sm font-medium text-ocean/70 hover:text-ocean"
             >
