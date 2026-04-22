@@ -3,7 +3,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { sendInviteEmail } from "@/lib/resend";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendInviteEmail, sendTurnEmail } from "@/lib/resend";
 
 export type AssistType = "suggest-line" | "rhyme" | "rewrite" | "unblock";
 
@@ -168,7 +169,43 @@ export async function passTurn(params: {
     read: false,
   });
 
+  // Fire-and-forget email via Resend. Admin client bypasses RLS to look up
+  // the next collaborator's email; the passer (current user) provides the
+  // display name shown in the message body.
+  const passerName =
+    ((user.user_metadata?.display_name as string | undefined) ?? "").trim() ||
+    user.email ||
+    "A collaborator";
+  void sendTurnEmailSafe({
+    nextUserId: next.user_id,
+    projectTitle: project.title,
+    projectUrl: `${getOrigin()}/projects/${project.id}`,
+    passerName,
+  });
+
   return { ok: true, nextName };
+}
+
+async function sendTurnEmailSafe(params: {
+  nextUserId: string;
+  projectTitle: string;
+  projectUrl: string;
+  passerName: string;
+}): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.auth.admin.getUserById(params.nextUserId);
+    const email = data?.user?.email;
+    if (!email) return;
+    await sendTurnEmail({
+      to: email,
+      projectTitle: params.projectTitle,
+      passerName: params.passerName,
+      projectUrl: params.projectUrl,
+    });
+  } catch {
+    // Delivery is best-effort; the in-app notification was already inserted.
+  }
 }
 
 // =============================================================================
@@ -404,4 +441,86 @@ export async function startCall(params: {
   }
 
   return { ok: true, count };
+}
+
+// =============================================================================
+// Project completion + public gallery
+// =============================================================================
+
+export type MarkCompleteResult =
+  | { ok: true; completedAt: string; isPublic: boolean }
+  | { error: string };
+
+export async function markProjectComplete(params: {
+  projectId: string;
+  makePublic: boolean;
+}): Promise<MarkCompleteResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  // Only the project owner can complete a project.
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, owner_id, status")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found." };
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can mark it complete." };
+  }
+
+  const completedAt = new Date().toISOString();
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      status: "completed",
+      completed_at: completedAt,
+      is_public: Boolean(params.makePublic),
+    })
+    .eq("id", params.projectId);
+  if (error) return { error: error.message };
+
+  return { ok: true, completedAt, isPublic: Boolean(params.makePublic) };
+}
+
+export type SetPublicResult =
+  | { ok: true; isPublic: boolean }
+  | { error: string };
+
+export async function setProjectPublic(params: {
+  projectId: string;
+  isPublic: boolean;
+}): Promise<SetPublicResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, owner_id, status")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found." };
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can change visibility." };
+  }
+  // Guardrail: public gallery is only for completed projects.
+  if (params.isPublic && project.status !== "completed") {
+    return {
+      error: "Mark the project complete before making it public.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ is_public: Boolean(params.isPublic) })
+    .eq("id", params.projectId);
+  if (error) return { error: error.message };
+
+  return { ok: true, isPublic: Boolean(params.isPublic) };
 }

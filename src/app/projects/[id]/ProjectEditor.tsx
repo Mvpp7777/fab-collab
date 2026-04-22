@@ -19,6 +19,9 @@ import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 import { FALLBACK_COLOR } from "@/lib/colors";
 import NotificationsBell from "@/components/NotificationsBell";
 import ExportMenu from "@/components/ExportMenu";
+import CompletionModal, {
+  type CompletionContributor,
+} from "@/components/CompletionModal";
 
 type Section = { id: string; title: string | null; position: number };
 
@@ -27,6 +30,9 @@ type Project = {
   title: string;
   project_type: ProjectTypeId;
   collab_mode: "relay" | "live";
+  status: string;
+  completed_at: string | null;
+  is_public: boolean;
 };
 
 export type CollaboratorEntry = {
@@ -129,6 +135,7 @@ export default function ProjectEditor({
   >(null);
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
   const [callMenuOpen, setCallMenuOpen] = useState(false);
   const [callToast, setCallToast] = useState<string | null>(null);
   const callMenuRef = useRef<HTMLDivElement | null>(null);
@@ -330,6 +337,15 @@ export default function ProjectEditor({
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
               >
                 ＋ Add Collaborator
+              </button>
+            )}
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setCompletionOpen(true)}
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
+              >
+                {project.status === "completed" ? "🏆 Completed" : "🏁 Mark as complete"}
               </button>
             )}
             <ExportMenu
@@ -570,6 +586,22 @@ export default function ProjectEditor({
         >
           {callToast}
         </div>
+      )}
+
+      {completionOpen && (
+        <CompletionModal
+          projectId={project.id}
+          projectTitle={project.title}
+          alreadyComplete={project.status === "completed"}
+          initialCompletedAt={project.completed_at}
+          initialIsPublic={project.is_public}
+          contributors={collaborators.map<CompletionContributor>((c) => ({
+            name: c.display_name?.trim() || c.email || "Collaborator",
+            color: c.color,
+          }))}
+          onClose={() => setCompletionOpen(false)}
+          onComplete={() => router.refresh()}
+        />
       )}
     </div>
   );
