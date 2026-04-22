@@ -1,29 +1,25 @@
 # Next session priorities
 
-## 1. Invitations
-Build the ability for a project owner to invite a collaborator 
-by email. When invited, the person receives an email with a link 
-to join the project. When they click the link they create an 
-account and are added to the project as a collaborator with 
-turn_order set.
+Previous priorities shipped:
+- Invitations (Resend email + shareable link)
+- Start a call (Face to Face dropdown with 5 platforms)
+- Notifications bell with unread count + dropdown
+- Export: plain text, PDF, Word
+- Avatar color fix (self-heal missing owner collaborator row)
+- UI polish: invite button renamed to "Add Collaborator"
 
-Use these defaults:
-- Email provider: Resend
-- Existing users: show a "Join project" confirmation page
-- Turn order: auto-assign next integer
-- Default role: editor, owner can change
-- Invite UI: share button + modal on the editor page
-- Token lifetime: 7 days
+## Open items for the next pass
 
-## 2. Start a call
-Add a "Start a call" button on the project editor that opens 
-a modal where collaborators can choose their preferred video 
-platform:
-- Google Meet (generate a meet link instantly, copy to clipboard)
-- Zoom (open zoom.us/start)
-- FaceTime (deep link for Mac/iPhone users)
-- Microsoft Teams (open teams link)
-- Discord (open discord.gg)
+1. **Live mode (real-time co-editing).** `projects.collab_mode = "live"` is persisted but behaves identically to relay. Use Supabase Realtime subscriptions on `content_snapshots` + presence for cursors.
 
-The generated link should also be sent as a notification to 
-all project collaborators so everyone gets it instantly.
+2. **Role enforcement.** `commenter` and `viewer` roles exist but RLS doesn't block non-editor writes. Add policy variants keyed on `collaborators.role`.
+
+3. **Comments thread on sections.** The `comments` table exists (section_id, user_id, parent_id, body, resolved); no UI yet. Slide-out panel from the right of each section.
+
+4. **Contributions telemetry.** `contributions` table exists (char_delta, word_delta, action_type, ai_assisted) but nothing writes to it. Emit from `saveSection` server action.
+
+5. **Avatar upload.** `users.avatar_url` is unused; add upload path via Supabase Storage and render on hover cards.
+
+6. **Plans & billing.** `users.plan`, `ai_credits`, `stripe_customer_id` all unused — wire up Stripe Checkout for Pro/Studio.
+
+7. **Auto-deploy from GitHub.** Currently deploy-on-push isn't configured — connect `Mvpp7777/fab-collab` in Vercel Settings → Git.

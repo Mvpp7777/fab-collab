@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
+import NotificationsBell from "@/components/NotificationsBell";
 import { createClient } from "@/lib/supabase/server";
+import { getUnreadCount } from "@/lib/notifications/actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +44,7 @@ export default async function DashboardPage() {
   }
 
   const hasProjects = projects.length > 0;
+  const unreadNotifications = await getUnreadCount();
 
   return (
     <div className="min-h-screen bg-foam">
@@ -60,6 +63,7 @@ export default async function DashboardPage() {
             >
               + New project
             </Link>
+            <NotificationsBell initialUnread={unreadNotifications} />
             <span className="hidden text-sm text-ocean/80 sm:inline">
               {displayName}
             </span>

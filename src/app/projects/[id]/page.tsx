@@ -9,6 +9,7 @@ import ProjectEditor, {
 } from "./ProjectEditor";
 import type { ProjectTypeId } from "@/lib/projectTypes";
 import { FALLBACK_COLOR, colorForTurnOrder } from "@/lib/colors";
+import { getUnreadCount } from "@/lib/notifications/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -220,6 +221,7 @@ export default async function ProjectPage({
   const myColor =
     myCollab?.color ||
     colorForTurnOrder(myCollab?.turn_order ?? 1);
+  const unreadNotifications = await getUnreadCount();
 
   return (
     <ProjectEditor
@@ -243,6 +245,7 @@ export default async function ProjectPage({
       currentHolderColor={currentHolderColor}
       isMyTurn={isMyTurn}
       lastEditorBySection={lastEditorBySection}
+      unreadNotifications={unreadNotifications}
     />
   );
 }

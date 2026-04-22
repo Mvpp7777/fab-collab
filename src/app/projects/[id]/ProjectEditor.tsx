@@ -17,6 +17,8 @@ import {
 } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 import { FALLBACK_COLOR } from "@/lib/colors";
+import NotificationsBell from "@/components/NotificationsBell";
+import ExportMenu from "@/components/ExportMenu";
 
 type Section = { id: string; title: string | null; position: number };
 
@@ -64,6 +66,7 @@ type Props = {
   currentHolderColor: string;
   isMyTurn: boolean;
   lastEditorBySection: Record<string, LastEditor | null>;
+  unreadNotifications: number;
 };
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -105,6 +108,7 @@ export default function ProjectEditor({
   currentHolderColor,
   isMyTurn,
   lastEditorBySection,
+  unreadNotifications,
 }: Props) {
   const router = useRouter();
   const typeMeta = PROJECT_TYPES.find((t) => t.id === project.project_type);
@@ -325,9 +329,18 @@ export default function ProjectEditor({
                 onClick={() => setShareOpen(true)}
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
               >
-                ＋ Share
+                ＋ Add Collaborator
               </button>
             )}
+            <ExportMenu
+              projectTitle={project.title}
+              sections={sections.map((s) => ({
+                title: s.title,
+                position: s.position,
+                content: content[s.id] ?? "",
+              }))}
+            />
+            <NotificationsBell initialUnread={unreadNotifications} />
             <div
               title={displayName}
               style={{ backgroundColor: myColor }}
@@ -685,7 +698,7 @@ function CollaboratorsPanel({
             onClick={onOpenShare}
             className="text-xs font-semibold text-lagoon hover:underline"
           >
-            ＋ Invite
+            ＋ Add Collaborator
           </button>
         )}
       </div>
@@ -856,7 +869,7 @@ function ShareModal({
   };
 
   return (
-    <ModalShell onClose={onClose} title="Share project">
+    <ModalShell onClose={onClose} title="Add Collaborator">
       <form onSubmit={submit} className="space-y-3">
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-ocean">Invite by email</span>
