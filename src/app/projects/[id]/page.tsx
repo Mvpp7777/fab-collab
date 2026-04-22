@@ -106,11 +106,35 @@ export default async function ProjectPage({
   const isMyTurn = currentHolderId === user.id;
 
   // Collaborators (includes color + turn_order from DB)
-  const { data: collabRows } = await admin
+  let { data: collabRows } = await admin
     .from("collaborators")
     .select("id, user_id, role, turn_order, color, users(display_name)")
     .eq("project_id", project.id)
     .order("turn_order", { ascending: true, nullsFirst: false });
+
+  // Self-heal: pre-seed/backfill gap. If the owner isn't in the collaborators
+  // table yet (project created before the owner-seed logic or before migration
+  // 007's backfill ran), insert them now so they appear in the turn order and
+  // their avatar color resolves correctly.
+  const ownerInList = (collabRows ?? []).some(
+    (c) => c.user_id === project.owner_id,
+  );
+  if (!ownerInList) {
+    await admin.from("collaborators").insert({
+      project_id: project.id,
+      user_id: project.owner_id,
+      role: "editor",
+      turn_order: 1,
+      color: "#0BBFBF",
+      invited_by: project.owner_id,
+    });
+    const { data: refreshed } = await admin
+      .from("collaborators")
+      .select("id, user_id, role, turn_order, color, users(display_name)")
+      .eq("project_id", project.id)
+      .order("turn_order", { ascending: true, nullsFirst: false });
+    collabRows = refreshed;
+  }
 
   const userIds = (collabRows ?? []).map((c) => c.user_id);
   const emailById: Record<string, string | null> = {};
@@ -192,8 +216,10 @@ export default async function ProjectPage({
     user.email ||
     "You";
   const initial = displayName.charAt(0).toUpperCase();
+  const myCollab = collaborators.find((c) => c.user_id === user.id);
   const myColor =
-    collaborators.find((c) => c.user_id === user.id)?.color ?? FALLBACK_COLOR;
+    myCollab?.color ||
+    colorForTurnOrder(myCollab?.turn_order ?? 1);
 
   return (
     <ProjectEditor
