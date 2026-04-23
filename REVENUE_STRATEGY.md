@@ -91,3 +91,64 @@ More agents pay → More deals → More success fees → Repeat
 - 100 Scout subscribers at $299/month = $360K/month extra
 - Success fees grow as creator success grows
 - Every deal makes platform more valuable to all creators
+
+## Crowdfunding Models (Zero Legal Complexity)
+
+### Model A — Tip a Creator
+- "Support this project ☕" button on feedback page
+- Any amount: $1, $3, $5, $10, or custom
+- Split equally between all collaborators
+- Fab Collab takes 10%
+- Zero legal complexity — pure appreciation economy
+- Same model as Buy Me a Coffee built into sharing flow
+
+### Model B — Unlock the Full Story  
+- Feedback page shows first section free
+- Full content unlocks for $1-5 (creator sets price)
+- Same model as Substack/Medium paywall
+- Fab Collab takes 10%
+- 200 readers paying $3 = $540 for creator, $60 for Fab Collab
+
+### Model C — Buy a Turn
+- Creator opens specific sections for purchase
+- Pricing tiers:
+  * $10 — add a line to an open section
+  * $25 — write a full section
+  * $100 — write a featured section (chorus, hook, climax)
+  * $500 — write with the creator in a live session
+- After payment, fan is added as collaborator for that section
+- Permanently credited as co-author
+- Authorship certificate documents it
+- Fab Collab takes 10%
+- Zero legal complexity — purchase of creative experience
+
+### Model D — Reserve My Spot Fee
+- Fans pay $5 to reserve spot in influencer campaign
+- Before campaign goes live, reservation period opens
+- $5 credited toward any future purchase
+- Most committed fans get guaranteed access
+- Gives influencer signal of real demand before launch
+- Fab Collab takes 10%
+
+### Model E — Sponsor a Section
+- Brands pay flat fee to sponsor a specific section
+- Tiers: $50, $100, $500 depending on project reach
+- Sponsor name appears on feedback page: 
+  "This section sponsored by [Brand]"
+- Mentioned in social share posts
+- Manual approval by Fab Collab team
+- Fab Collab takes 20%
+
+### Stripe Setup Required First
+Before any payment feature can be built:
+STRIPE_PUBLISHABLE_KEY=pk_live_your_key
+STRIPE_SECRET_KEY=sk_live_your_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_key
+
+### Build Order (simplest to complex):
+1. Stripe setup and basic checkout session
+2. Model A — Tip a Creator (one session)
+3. Model B — Unlock the Full Story (one session)
+4. Model C — Buy a Turn (two sessions)
+5. Model D — Reserve My Spot Fee (one session)
+6. Model E — Sponsor a Section (one session)
