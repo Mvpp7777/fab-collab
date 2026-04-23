@@ -137,6 +137,12 @@ export default async function FeedbackTokenPage({
             <FeedbackForm token={params.token} />
           </div>
         </section>
+
+        <footer className="mt-10 border-t border-ocean/10 pt-6 text-center text-xs text-ocean/50">
+          © 2026 {firstNames[0] ?? "the creator"}
+          {firstNames.length > 1 ? " and contributors" : ""}. All rights
+          reserved. Created on Fab Collab™
+        </footer>
       </main>
     </div>
   );

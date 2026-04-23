@@ -32,7 +32,7 @@ export default function TermsPage() {
 
         <article className="prose mt-8 max-w-none space-y-6 text-ocean">
           <Section title="1. What Fab Collab is">
-            Fab Collab is a collaborative creative-writing platform. Users
+            Fab Collab™ is a collaborative creative-writing platform. Users
             create projects (songs, screenplays, novels, business documents,
             and more), invite collaborators, take turns writing, and optionally
             publish completed work to a public gallery. Fab Collab also
@@ -106,7 +106,41 @@ export default function TermsPage() {
             jurisdiction.
           </Section>
 
-          <Section title="11. Contact">
+          <Section title="11. Intellectual Property — Fab Collab">
+            The Fab Collab™ platform, including its design, features, relay
+            mode technology, and underlying code, is protected by copyright
+            and intellectual property laws. Fab Collab™ is a trademark. You
+            may not copy, modify, or reverse engineer any part of the
+            platform.
+          </Section>
+
+          <Section title="12. Intellectual Property — Your Content">
+            You retain full ownership of all content you create on Fab Collab.
+            By posting content you grant Fab Collab a limited, non-exclusive
+            license to display it within the platform. We do not claim
+            ownership of your creative work. We do not sell your content to
+            third parties.
+          </Section>
+
+          <Section title="13. DMCA">
+            Fab Collab respects intellectual property rights. To submit a
+            copyright takedown notice contact{" "}
+            <a
+              href="mailto:dmca@fabcollab.com"
+              className="font-medium text-lagoon hover:underline"
+            >
+              dmca@fabcollab.com
+            </a>
+            .
+          </Section>
+
+          <Section title="14. Anti-scraping">
+            Automated access to the Fab Collab platform — including scraping,
+            crawling, or data mining — is prohibited without prior written
+            permission.
+          </Section>
+
+          <Section title="15. Contact">
             Questions about these terms? Email{" "}
             <a
               href="mailto:support@fabcollab.com"

@@ -17,9 +17,13 @@ export type ProjectTypeId =
   | "event_planning"
   | "product_roadmap"
   | "meeting_agenda"
-  | "proposal";
+  | "proposal"
+  | "think_tank"
+  | "community_challenge"
+  | "research_collective"
+  | "innovation_sprint";
 
-export type ProjectCategory = "creative" | "professional";
+export type ProjectCategory = "creative" | "professional" | "think_tank";
 
 export type ProjectTypeMeta = {
   id: ProjectTypeId;
@@ -52,6 +56,12 @@ export const PROJECT_TYPES: ProjectTypeMeta[] = [
   { id: "product_roadmap",    label: "Product roadmap",      emoji: "🗺️", description: "Features, sprints, and goals",         category: "professional" },
   { id: "meeting_agenda",     label: "Meeting agenda",       emoji: "📋", description: "Topics, owners, and action items",     category: "professional" },
   { id: "proposal",           label: "Proposal",             emoji: "📝", description: "Executive summary, scope, and pricing", category: "professional" },
+
+  // Think Tank & Innovation
+  { id: "think_tank",            label: "Think Tank",            emoji: "💡", description: "Ideas, solutions, and collective intelligence",  category: "think_tank" },
+  { id: "community_challenge",   label: "Community Challenge",   emoji: "🌍", description: "Local problems, collective solutions",           category: "think_tank" },
+  { id: "research_collective",   label: "Research Collective",   emoji: "🔬", description: "Collaborative research and discovery",           category: "think_tank" },
+  { id: "innovation_sprint",     label: "Innovation Sprint",     emoji: "🏃", description: "Fast ideation and problem solving",              category: "think_tank" },
 ];
 
 export const DEFAULT_SECTIONS: Record<ProjectTypeId, string[]> = {
@@ -77,4 +87,10 @@ export const DEFAULT_SECTIONS: Record<ProjectTypeId, string[]> = {
   product_roadmap:    ["Vision", "Q1 goals", "Q2 goals", "Q3 goals", "Q4 goals", "Success metrics"],
   meeting_agenda:     ["Attendees", "Objectives", "Topic 1", "Topic 2", "Topic 3", "Action items", "Next steps"],
   proposal:           ["Executive summary", "About us", "The problem", "Our solution", "Scope of work", "Timeline", "Investment", "Next steps"],
+
+  // Think Tank & Innovation
+  think_tank:            ["The Problem", "Our Solution", "Market Opportunity", "Business Model", "The Team", "What We Need", "Open Questions", "Expert Contributions"],
+  community_challenge:   ["The Challenge", "Current Situation", "Proposed Solution", "Resources Needed", "Community Impact", "Action Plan"],
+  research_collective:   ["Research Question", "Background", "Methodology", "Findings", "Analysis", "Conclusions", "Next Steps"],
+  innovation_sprint:     ["Problem Statement", "Constraints", "Ideas Generated", "Top 3 Concepts", "Prototype Plan", "Success Metrics"],
 };

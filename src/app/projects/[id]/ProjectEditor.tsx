@@ -38,6 +38,7 @@ type Project = {
   status: string;
   completed_at: string | null;
   is_public: boolean;
+  license: string;
 };
 
 export type CollaboratorEntry = {
@@ -708,6 +709,11 @@ export default function ProjectEditor({
           alreadyComplete={project.status === "completed"}
           initialCompletedAt={project.completed_at}
           initialIsPublic={project.is_public}
+          initialLicense={project.license as
+            | "all-rights-reserved"
+            | "cc-by"
+            | "cc-by-nc"
+            | "cc-by-sa"}
           contributors={collaborators.map<CompletionContributor>((c) => ({
             name: c.display_name?.trim() || c.email || "Collaborator",
             color: c.color,

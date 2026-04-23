@@ -16,6 +16,7 @@ type SnapshotRow = {
   section_id: string;
   content_text: string;
   created_at: string;
+  saved_by?: string | null;
 };
 
 type ContributorRow = {
@@ -51,7 +52,7 @@ export default async function DiscoverProject({
 
   const { data: snapshotsData } = await admin
     .from("content_snapshots")
-    .select("section_id, content_text, created_at")
+    .select("section_id, content_text, created_at, saved_by")
     .in("section_id", sections.map((s) => s.id))
     .order("created_at", { ascending: false });
 
@@ -61,6 +62,14 @@ export default async function DiscoverProject({
       latestBySection[snap.section_id] = snap.content_text;
     }
   }
+
+  // Chronological timeline for the "How this was created" strip.
+  const orderedSaves = [...((snapshotsData ?? []) as SnapshotRow[])].sort(
+    (a, b) => +new Date(a.created_at) - +new Date(b.created_at),
+  );
+  const sectionTitleById: Record<string, string> = Object.fromEntries(
+    sections.map((s) => [s.id, s.title ?? `Section ${s.position + 1}`]),
+  );
 
   const { data: collabData } = await admin
     .from("collaborators")
@@ -166,6 +175,47 @@ export default async function DiscoverProject({
             </article>
           ))}
         </section>
+
+        {orderedSaves.length > 0 && (
+          <section className="mt-12 rounded-2xl bg-white p-6 shadow-sm">
+            <h2 className="font-display text-2xl font-extrabold text-ocean">
+              How this was created
+            </h2>
+            <p className="mt-1 text-sm text-ocean/70">
+              Every contribution timestamped and attributed
+            </p>
+            <ol className="mt-6 space-y-3 border-l-2 border-ocean/10 pl-4">
+              {orderedSaves.map((s, i) => {
+                const editor = contributors.find(
+                  (_, idx) =>
+                    collabRows[idx]?.user_id === s.saved_by,
+                );
+                const name = editor?.name ?? "Someone";
+                const color = editor?.color ?? "#0BBFBF";
+                const words = (s.content_text || "").trim().split(/\s+/).filter(Boolean).length;
+                return (
+                  <li key={i} className="relative">
+                    <span
+                      style={{ backgroundColor: color }}
+                      className="absolute -left-[1.35rem] top-1 h-3 w-3 rounded-full ring-2 ring-white"
+                    />
+                    <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                      <span className="font-semibold" style={{ color }}>
+                        {name}
+                      </span>
+                      <span className="text-ocean/60">
+                        on {sectionTitleById[s.section_id] ?? "a section"}
+                      </span>
+                      <span className="text-xs text-ocean/50">
+                        · ~{words} words · {new Date(s.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
 
         <footer className="mt-12 rounded-2xl border border-ocean/10 bg-white p-6 text-center">
           <p className="font-display text-lg font-semibold text-ocean">

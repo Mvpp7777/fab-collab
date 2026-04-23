@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 import { FALLBACK_COLOR, colorForTurnOrder } from "@/lib/colors";
+import { licenseMeta } from "@/lib/licenses";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ type DiscoverProjectRow = {
   project_type: string;
   completed_at: string | null;
   updated_at: string;
+  license: string | null;
 };
 
 type ContributorRow = {
@@ -72,7 +74,7 @@ export default async function DiscoverIndex() {
 
   const { data: projectsData } = await admin
     .from("projects")
-    .select("id, title, project_type, completed_at, updated_at")
+    .select("id, title, project_type, completed_at, updated_at, license")
     .eq("is_public", true)
     .eq("status", "completed")
     .order("completed_at", { ascending: false, nullsFirst: false })
@@ -290,11 +292,16 @@ export default async function DiscoverIndex() {
                         ))}
                       </ul>
                     )}
-                    {completedStr && (
-                      <div className="mt-4 text-xs text-ocean/50">
-                        Completed {completedStr}
-                      </div>
-                    )}
+                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-ocean/50">
+                      {completedStr && <span>Completed {completedStr}</span>}
+                      <span
+                        className="rounded-full border border-ocean/15 bg-foam/50 px-2 py-0.5 font-semibold text-ocean/70"
+                        title={licenseMeta(p.license).name}
+                      >
+                        {licenseMeta(p.license).badge}
+                      </span>
+                    </div>
+
                     <Link
                       href={`/discover/${p.id}`}
                       className="mt-4 inline-block self-start rounded-full border border-ocean/15 bg-white px-3 py-1.5 text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"

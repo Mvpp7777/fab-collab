@@ -152,3 +152,47 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_key
 4. Model C — Buy a Turn (two sessions)
 5. Model D — Reserve My Spot Fee (one session)
 6. Model E — Sponsor a Section (one session)
+
+## Think Tank — Expert Marketplace & Mini Shark Tank
+
+### What It Is
+A special project type where collaborators develop ideas 
+and can invite verified experts to contribute paid input 
+directly into the document. Experts can also express 
+investment interest creating a mini Shark Tank experience.
+
+### Revenue Model
+- Expert contribution fees: Fab Collab takes 20%
+  Example: Expert charges $500, Fab Collab earns $100
+  100 Think Tanks/month x 1 expert = $10,000/month
+- Investor access subscription: $500/month per investor
+  50 investors = $25,000/month recurring
+- Investment success fees: 2-3% of deals facilitated
+  $500K seed round = $10,000-15,000 per deal
+- Think Tank Pro tier: $99/month unlimited projects
+
+### Expert Categories
+Founders & Entrepreneurs, Investors & VCs,
+Marketing & Growth, Legal & IP, Operations & Scaling,
+Music Industry, Film & Entertainment, Publishing & Media,
+Healthcare, Policy & Government, International Expansion
+
+### Expert Verification
+- Self-reported with LinkedIn verification
+- Manual review by Fab Collab team (24-48 hours)
+- Tiers: Verified, Featured Expert, Fab Collab Fellow
+
+### Build Order
+1. Add Think Tank as project type with custom sections
+2. Expert waitlist page at /experts
+3. Expert profiles with contribution request (email first)
+4. Stripe payment for expert contributions (20% fee)
+5. Open for Investment flag on completed Think Tanks
+6. Investor subscription portal at $500/month
+7. Investment success fee tracking
+
+### The Positioning
+For creatives: "Write it together. Get discovered. Get paid."
+For entrepreneurs: "Build it together. Get expert input. 
+Get funded."
+For everyone: "The platform where ideas become real."

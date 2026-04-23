@@ -448,12 +448,13 @@ export async function startCall(params: {
 // =============================================================================
 
 export type MarkCompleteResult =
-  | { ok: true; completedAt: string; isPublic: boolean }
+  | { ok: true; completedAt: string; isPublic: boolean; license: string }
   | { error: string };
 
 export async function markProjectComplete(params: {
   projectId: string;
   makePublic: boolean;
+  license?: string;
 }): Promise<MarkCompleteResult> {
   const supabase = createClient();
   const {
@@ -461,7 +462,6 @@ export async function markProjectComplete(params: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
-  // Only the project owner can complete a project.
   const { data: project } = await supabase
     .from("projects")
     .select("id, owner_id, status")
@@ -472,6 +472,7 @@ export async function markProjectComplete(params: {
     return { error: "Only the project owner can mark it complete." };
   }
 
+  const license = params.license ?? "all-rights-reserved";
   const completedAt = new Date().toISOString();
   const { error } = await supabase
     .from("projects")
@@ -479,11 +480,47 @@ export async function markProjectComplete(params: {
       status: "completed",
       completed_at: completedAt,
       is_public: Boolean(params.makePublic),
+      license,
     })
     .eq("id", params.projectId);
   if (error) return { error: error.message };
 
-  return { ok: true, completedAt, isPublic: Boolean(params.makePublic) };
+  return {
+    ok: true,
+    completedAt,
+    isPublic: Boolean(params.makePublic),
+    license,
+  };
+}
+
+export type SetLicenseResult = { ok: true } | { error: string };
+
+export async function setProjectLicense(params: {
+  projectId: string;
+  license: string;
+}): Promise<SetLicenseResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, owner_id")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found." };
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can change the license." };
+  }
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ license: params.license })
+    .eq("id", params.projectId);
+  if (error) return { error: error.message };
+  return { ok: true };
 }
 
 export type SetPublicResult =

@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   markProjectComplete,
+  setProjectLicense,
   setProjectPublic,
 } from "@/app/projects/[id]/actions";
 import { generateCertificatePdf } from "@/lib/certificate";
+import { LICENSES, type LicenseId } from "@/lib/licenses";
 
 export type CompletionContributor = {
   name: string;
@@ -19,6 +21,7 @@ type Props = {
   alreadyComplete: boolean;
   initialCompletedAt: string | null;
   initialIsPublic: boolean;
+  initialLicense?: LicenseId;
   onClose: () => void;
   onComplete?: (completedAt: string, isPublic: boolean) => void;
 };
@@ -30,10 +33,14 @@ export default function CompletionModal({
   alreadyComplete,
   initialCompletedAt,
   initialIsPublic,
+  initialLicense,
   onClose,
   onComplete,
 }: Props) {
   const [makePublic, setMakePublic] = useState(initialIsPublic);
+  const [license, setLicense] = useState<LicenseId>(
+    initialLicense ?? "all-rights-reserved",
+  );
   const [busy, setBusy] = useState(false);
   const [completedAt, setCompletedAt] = useState<string | null>(
     initialCompletedAt,
@@ -82,7 +89,11 @@ export default function CompletionModal({
     if (busy) return;
     setBusy(true);
     setError(null);
-    const result = await markProjectComplete({ projectId, makePublic });
+    const result = await markProjectComplete({
+      projectId,
+      makePublic,
+      license,
+    });
     setBusy(false);
     if ("error" in result) {
       setError(result.error);
@@ -92,6 +103,13 @@ export default function CompletionModal({
     setIsPublic(result.isPublic);
     setCompleted(true);
     onComplete?.(result.completedAt, result.isPublic);
+  };
+
+  const handleLicenseChange = async (next: LicenseId) => {
+    setLicense(next);
+    if (!completed) return; // only persist after marking complete
+    const r = await setProjectLicense({ projectId, license: next });
+    if ("error" in r) setError(r.error);
   };
 
   const handleTogglePublic = async (next: boolean) => {
@@ -269,6 +287,13 @@ export default function CompletionModal({
               onChange={handleTogglePublic}
               disabled={busy}
             />
+            {isPublic && (
+              <LicensePicker
+                value={license}
+                onChange={handleLicenseChange}
+                disabled={busy}
+              />
+            )}
           </>
         ) : (
           <>
@@ -290,6 +315,13 @@ export default function CompletionModal({
               onChange={setMakePublic}
               disabled={busy}
             />
+            {makePublic && (
+              <LicensePicker
+                value={license}
+                onChange={(v) => setLicense(v)}
+                disabled={busy}
+              />
+            )}
 
             {error && (
               <p className="mt-4 rounded-md bg-coral/10 px-3 py-2 text-sm text-coral">
@@ -352,6 +384,49 @@ function PublicToggle({
           </span>
         </span>
       </label>
+    </div>
+  );
+}
+
+function LicensePicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: LicenseId;
+  onChange: (v: LicenseId) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="mt-3 rounded-xl border border-ocean/10 bg-white p-4">
+      <div className="text-sm font-semibold text-ocean">
+        Choose a license for your public project:
+      </div>
+      <ul className="mt-3 space-y-2">
+        {LICENSES.map((l) => (
+          <li key={l.id}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="license"
+                value={l.id}
+                checked={value === l.id}
+                onChange={() => onChange(l.id)}
+                disabled={disabled}
+                className="mt-0.5 h-4 w-4 flex-none accent-[#0BBFBF]"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ocean">
+                  {l.badge}
+                </span>
+                <span className="mt-0.5 block text-xs text-ocean/70">
+                  {l.description}
+                </span>
+              </span>
+            </label>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

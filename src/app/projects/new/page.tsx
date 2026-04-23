@@ -52,14 +52,16 @@ export default function NewProjectPage() {
           <input type="hidden" name="project_type" value={selectedType} />
           <input type="hidden" name="collab_mode" value={collabMode} />
 
-          {(["creative", "professional"] as const).map((category) => {
+          {(["creative", "professional", "think_tank"] as const).map((category) => {
             const typesInCategory = PROJECT_TYPES.filter(
               (t) => t.category === category,
             );
             const heading =
               category === "creative"
                 ? "Creative projects"
-                : "Work & professional projects";
+                : category === "professional"
+                  ? "Work & professional projects"
+                  : "Think Tank & Innovation";
             return (
               <section key={category} className="space-y-4">
                 <h2 className="font-display text-xl font-bold text-ocean">

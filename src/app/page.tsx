@@ -31,9 +31,14 @@ const FEATURES = [
     title: "Community Feedback",
     body: "Share with anyone for feedback. No account needed.",
   },
+  {
+    emoji: "💡",
+    title: "Think Tank",
+    body: "Develop ideas with your team and invite verified industry experts to contribute their real-world experience directly into your project.",
+  },
 ];
 
-const PROJECT_EMOJIS = ["🎵", "🎬", "📖", "✍️", "🎙️", "🏗️", "📊", "🎉"];
+const PROJECT_EMOJIS = ["🎵", "🎬", "📖", "✍️", "🎙️", "🏗️", "📊", "🎉", "💡"];
 
 export default function Landing() {
   return (
@@ -48,6 +53,7 @@ export default function Landing() {
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
             <Link href="/discover" className="hover:text-ocean">Discover</Link>
+            <Link href="/experts" className="hidden hover:text-ocean sm:inline">Experts</Link>
             <Link href="/industry" className="hidden hover:text-ocean sm:inline">Industry</Link>
             <Link href="/auth/login" className="hover:text-ocean">Log in</Link>
             <Link
@@ -124,6 +130,89 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Think Tank */}
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <div className="text-center">
+          <div className="inline-block rounded-full bg-lagoon/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-lagoon">
+            Think Tank — Where Ideas Meet Expertise
+          </div>
+          <h2 className="mt-4 font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+            Got a big idea? Get expert input.
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base text-ocean/70 sm:text-lg">
+            Invite verified founders, investors, and industry veterans to
+            contribute directly into your Think Tank project. They add their
+            expertise. You keep moving forward.
+          </p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-ocean">
+              For teams with ideas
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm text-ocean/80">
+              <li className="flex gap-2">
+                <span className="text-lagoon">•</span>
+                Develop your concept collaboratively
+              </li>
+              <li className="flex gap-2">
+                <span className="text-lagoon">•</span>
+                Invite experts to fill your knowledge gaps
+              </li>
+              <li className="flex gap-2">
+                <span className="text-lagoon">•</span>
+                Get feedback from people who have done it before
+              </li>
+              <li className="flex gap-2">
+                <span className="text-lagoon">•</span>
+                Open your project for investment when ready
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-ocean">
+              For experts
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm text-ocean/80">
+              <li className="flex gap-2">
+                <span className="text-coral">•</span>
+                Share your knowledge and get paid
+              </li>
+              <li className="flex gap-2">
+                <span className="text-coral">•</span>
+                Set your own contribution rate
+              </li>
+              <li className="flex gap-2">
+                <span className="text-coral">•</span>
+                Work on your own schedule
+              </li>
+              <li className="flex gap-2">
+                <span className="text-coral">•</span>
+                Discover investment opportunities early
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/experts"
+            style={{ backgroundColor: "#0BBFBF", color: "white" }}
+            className="rounded-full px-5 py-2.5 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95"
+          >
+            Apply as an expert →
+          </Link>
+          <Link
+            href="/auth/signup"
+            style={{ backgroundColor: "#FF6B47", color: "white" }}
+            className="rounded-full px-5 py-2.5 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95"
+          >
+            Start a Think Tank →
+          </Link>
+        </div>
+      </section>
+
       {/* Industry CTA */}
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-12">
@@ -171,11 +260,12 @@ export default function Landing() {
           </Link>
           <nav className="flex flex-wrap items-center gap-5 text-sm font-medium text-ocean/70">
             <Link href="/discover" className="hover:text-ocean">Discover</Link>
+            <Link href="/experts" className="hover:text-ocean">Experts</Link>
             <Link href="/industry" className="hover:text-ocean">Industry</Link>
             <Link href="/terms" className="hover:text-ocean">Terms</Link>
             <Link href="/privacy" className="hover:text-ocean">Privacy</Link>
           </nav>
-          <p className="text-sm text-ocean/50">© 2026 Fab Collab</p>
+          <p className="text-sm text-ocean/50">© 2026 Fab Collab™</p>
         </div>
       </footer>
     </div>

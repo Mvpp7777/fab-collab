@@ -160,6 +160,56 @@ ${p.passerName} just passed the turn to you. Click below to keep the momentum go
 ${p.projectUrl}`;
 }
 
+// -----------------------------------------------------------------------------
+// Expert application internal notification (plain text to team inbox)
+// -----------------------------------------------------------------------------
+
+export async function sendExpertApplicationNotice(params: {
+  to: string;
+  name: string;
+  title: string;
+  company: string;
+  category: string;
+  email: string;
+  linkedinUrl: string;
+  contributionRate: string;
+  yearsExperience: string;
+  openToInvesting: boolean;
+  achievements: string;
+}): Promise<{ ok: boolean; message?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { ok: false, message: "RESEND_API_KEY not set" };
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const subject = `New expert application from ${params.name} — ${params.title || "(no title)"} at ${params.company || "(no company)"}`;
+  const body = [
+    `Name: ${params.name}`,
+    `Title: ${params.title}`,
+    `Company: ${params.company}`,
+    `Category: ${params.category}`,
+    `Years: ${params.yearsExperience}`,
+    `Rate: ${params.contributionRate}`,
+    `Open to investing: ${params.openToInvesting ? "yes" : "no"}`,
+    `LinkedIn: ${params.linkedinUrl}`,
+    `Email: ${params.email}`,
+    ``,
+    `Achievements:`,
+    params.achievements,
+  ].join("\n");
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: params.to,
+      subject,
+      text: body,
+    });
+    if (error) return { ok: false, message: error.message ?? "send failed" };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "send failed" };
+  }
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
