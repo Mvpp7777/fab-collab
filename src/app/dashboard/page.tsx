@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 import NotificationsBell from "@/components/NotificationsBell";
+import OnboardingModal from "@/components/OnboardingModal";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUnreadCount } from "@/lib/notifications/actions";
@@ -111,6 +112,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-foam">
+      {!hasProjects && <OnboardingModal userId={user.id} />}
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/dashboard" aria-label="Fab Collab home">
@@ -131,6 +133,12 @@ export default async function DashboardPage() {
               className="hidden text-sm font-medium text-ocean/70 transition hover:text-ocean sm:inline"
             >
               Industry
+            </Link>
+            <Link
+              href="/campaign/new"
+              className="hidden text-sm font-medium text-ocean/70 transition hover:text-ocean sm:inline"
+            >
+              Launch campaign
             </Link>
             <Link
               href="/projects/new"

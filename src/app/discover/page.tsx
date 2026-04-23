@@ -28,6 +28,48 @@ type UserNameRow = {
 export default async function DiscoverIndex() {
   const admin = createAdminClient();
 
+  const { data: campaignRows } = await admin
+    .from("campaigns")
+    .select(
+      "id, slug, title, reward, max_collaborators, spots_filled, end_date, status, users(display_name), projects(project_type)",
+    )
+    .eq("status", "open")
+    .order("spots_filled", { ascending: false })
+    .limit(12);
+
+  type CampaignCard = {
+    slug: string;
+    title: string;
+    reward: string | null;
+    spots_filled: number;
+    max_collaborators: number;
+    end_date: string | null;
+    owner: string;
+    projectType: string;
+  };
+  const liveCampaigns: CampaignCard[] = (campaignRows ?? []).map((c) => {
+    const ownerRel = c.users as
+      | { display_name: string | null }
+      | Array<{ display_name: string | null }>
+      | null;
+    const ownerRow = Array.isArray(ownerRel) ? ownerRel[0] : ownerRel;
+    const projRel = c.projects as
+      | { project_type: string }
+      | Array<{ project_type: string }>
+      | null;
+    const projRow = Array.isArray(projRel) ? projRel[0] : projRel;
+    return {
+      slug: String(c.slug),
+      title: String(c.title),
+      reward: (c.reward as string | null) ?? null,
+      spots_filled: Number(c.spots_filled ?? 0),
+      max_collaborators: Number(c.max_collaborators ?? 1),
+      end_date: (c.end_date as string | null) ?? null,
+      owner: ownerRow?.display_name?.trim() || "Creator",
+      projectType: projRow?.project_type ?? "freeform",
+    };
+  });
+
   const { data: projectsData } = await admin
     .from("projects")
     .select("id, title, project_type, completed_at, updated_at")
@@ -123,6 +165,80 @@ export default async function DiscoverIndex() {
             Completed projects shared by the Fab Collab community.
           </p>
         </section>
+
+        {liveCampaigns.length > 0 && (
+          <section className="mt-10">
+            <h2 className="font-display text-2xl font-extrabold text-ocean">
+              🔥 Live Campaigns
+            </h2>
+            <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {liveCampaigns.map((c) => {
+                const meta = PROJECT_TYPES.find(
+                  (t) => t.id === (c.projectType as ProjectTypeId),
+                );
+                const remaining = Math.max(
+                  0,
+                  c.max_collaborators - c.spots_filled,
+                );
+                const pct = Math.min(
+                  100,
+                  (c.spots_filled / Math.max(1, c.max_collaborators)) * 100,
+                );
+                const barColor =
+                  pct < 50
+                    ? "#0BBFBF"
+                    : pct < 75
+                      ? "#FFB347"
+                      : pct < 90
+                        ? "#FF6B47"
+                        : "#E53935";
+                return (
+                  <li
+                    key={c.slug}
+                    className="flex flex-col rounded-2xl bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-ocean/60">
+                      <span aria-hidden>{meta?.emoji ?? "✨"}</span>
+                      <span>{meta?.label ?? c.projectType}</span>
+                    </div>
+                    <div className="mt-3 font-display text-lg font-bold text-ocean">
+                      {c.title}
+                    </div>
+                    <div className="mt-1 text-xs text-ocean/60">
+                      by {c.owner}
+                    </div>
+                    {c.reward && (
+                      <div className="mt-3 rounded-full bg-lagoon/10 px-3 py-1 text-xs font-semibold text-lagoon">
+                        🏆 {c.reward}
+                      </div>
+                    )}
+                    <div className="mt-4">
+                      <div className="text-xs font-semibold text-ocean/70">
+                        {remaining} of {c.max_collaborators} spots left
+                      </div>
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-ocean/10">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: barColor,
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <Link
+                      href={`/campaign/${c.slug}`}
+                      style={{ backgroundColor: "#FF6B47", color: "white" }}
+                      className="mt-4 inline-block self-start rounded-full px-4 py-1.5 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95"
+                    >
+                      View campaign →
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-12">
           {projects.length === 0 ? (
