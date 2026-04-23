@@ -112,24 +112,33 @@ export default function NotificationsBell({
               You&rsquo;re all caught up.
             </div>
           ) : (
+            <>
             <ul className="max-h-96 divide-y divide-ocean/10 overflow-y-auto">
               {items.map((n) => {
                 const inner = (
                   <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-foam/60">
                     <span
                       aria-hidden
-                      style={{
-                        backgroundColor: n.read
-                          ? "rgba(26,46,46,0.15)"
-                          : "#0BBFBF",
-                      }}
-                      className="mt-1.5 h-2 w-2 flex-none rounded-full"
-                    />
+                      className="mt-0.5 flex-none text-lg"
+                    >
+                      {iconForType(n.type)}
+                    </span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm text-ocean">
-                        {n.body ?? iconForType(n.type) + " " + n.type}
+                      <div className="flex items-start gap-2">
+                        <span
+                          aria-hidden
+                          style={{
+                            backgroundColor: n.read
+                              ? "rgba(26,46,46,0.15)"
+                              : "#0BBFBF",
+                          }}
+                          className="mt-1.5 h-2 w-2 flex-none rounded-full"
+                        />
+                        <div className="text-sm text-ocean">
+                          {n.body ?? n.type}
+                        </div>
                       </div>
-                      <div className="mt-0.5 text-xs text-ocean/50">
+                      <div className="ml-4 mt-0.5 text-xs text-ocean/50">
                         {formatRelative(n.created_at)}
                       </div>
                     </div>
@@ -158,7 +167,15 @@ export default function NotificationsBell({
                 );
               })}
             </ul>
+            </>
           )}
+          <Link
+            href="/notifications"
+            onClick={() => setOpen(false)}
+            className="block border-t border-ocean/10 px-4 py-2 text-center text-xs font-semibold text-lagoon transition hover:bg-foam"
+          >
+            View all notifications →
+          </Link>
         </div>
       )}
     </div>
@@ -168,9 +185,19 @@ export default function NotificationsBell({
 function iconForType(type: string): string {
   switch (type) {
     case "turn_passed":
-      return "🔄";
+      return "🎵";
+    case "comment_added":
+      return "💬";
     case "call_started":
-      return "📹";
+      return "📞";
+    case "campaign_milestone":
+      return "🎉";
+    case "campaign_joined":
+      return "🤝";
+    case "campaign_message":
+      return "📣";
+    case "expert_application":
+      return "💡";
     case "invited":
       return "✉️";
     default:

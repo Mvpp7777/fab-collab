@@ -21,6 +21,7 @@ import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
 import { FALLBACK_COLOR } from "@/lib/colors";
 import NotificationsBell from "@/components/NotificationsBell";
 import ExportMenu from "@/components/ExportMenu";
+import ShareMenu from "@/components/ShareMenu";
 import CompletionModal, {
   type CompletionContributor,
 } from "@/components/CompletionModal";
@@ -327,7 +328,7 @@ export default function ProjectEditor({
   return (
     <div className="min-h-screen bg-foam pb-24">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/dashboard"
@@ -358,9 +359,10 @@ export default function ProjectEditor({
                 onClick={() => setCallMenuOpen((o) => !o)}
                 aria-haspopup="menu"
                 aria-expanded={callMenuOpen}
+                title="Face to Face"
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
               >
-                Face to Face 📹
+                <span className="hidden sm:inline">Face to Face </span>📹
               </button>
               {callMenuOpen && (
                 <div
@@ -382,22 +384,40 @@ export default function ProjectEditor({
                 </div>
               )}
             </div>
+            <ShareMenu
+              projectId={project.id}
+              projectTitle={project.title}
+              projectType={project.project_type}
+              collaboratorNames={collaborators.map(
+                (c) => c.display_name?.trim() || c.email || "Collaborator",
+              )}
+              firstSectionContent={
+                sections
+                  .map((s) => content[s.id] ?? "")
+                  .find((t) => t.trim().length > 0) ?? ""
+              }
+            />
             {isOwner && (
               <button
                 type="button"
                 onClick={() => setShareOpen(true)}
+                title="Add Collaborator"
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
               >
-                ＋ Add Collaborator
+                ＋<span className="hidden sm:ml-1 sm:inline">Add Collaborator</span>
               </button>
             )}
             {isOwner && (
               <button
                 type="button"
                 onClick={() => setCompletionOpen(true)}
+                title={project.status === "completed" ? "Completed" : "Mark as complete"}
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
               >
-                {project.status === "completed" ? "🏆 Completed" : "🏁 Mark as complete"}
+                {project.status === "completed" ? "🏆" : "🏁"}
+                <span className="hidden sm:ml-1 sm:inline">
+                  {project.status === "completed" ? "Completed" : "Mark as complete"}
+                </span>
               </button>
             )}
             {isOwner && (
@@ -405,9 +425,13 @@ export default function ProjectEditor({
                 type="button"
                 onClick={handleGetFeedback}
                 disabled={feedbackBusy}
+                title="Get feedback"
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {feedbackBusy ? "Generating…" : "💬 Get feedback"}
+                💬
+                <span className="hidden sm:ml-1 sm:inline">
+                  {feedbackBusy ? "Generating…" : "Get feedback"}
+                </span>
               </button>
             )}
             {project.project_type === "song" && project.status === "completed" && (
@@ -415,9 +439,11 @@ export default function ProjectEditor({
                 type="button"
                 onClick={handleDistribute}
                 disabled={distributeBusy}
+                title="Distribute"
                 className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                🎵 Distribute
+                🎵
+                <span className="hidden sm:ml-1 sm:inline">Distribute</span>
               </button>
             )}
             <ExportMenu

@@ -6,6 +6,12 @@ import { licenseMeta } from "@/lib/licenses";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Discover — Fab Collab",
+  description:
+    "Browse completed collaborative projects from songwriters, screenwriters, novelists and more.",
+};
+
 type DiscoverProjectRow = {
   id: string;
   title: string;

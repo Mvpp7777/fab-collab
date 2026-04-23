@@ -1,4 +1,17 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Fab Collab — Write it together. Get discovered. Get paid.",
+  description:
+    "The platform where songwriters, screenwriters, novelists, and teams create together, get feedback from the world, and get discovered by industry professionals.",
+  openGraph: {
+    title: "Fab Collab — Write it together. Get discovered. Get paid.",
+    description:
+      "The platform where songwriters, screenwriters, novelists, and teams create together, get feedback from the world, and get discovered by industry professionals.",
+    type: "website",
+  },
+};
 
 const FEATURES = [
   {

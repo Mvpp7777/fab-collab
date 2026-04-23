@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUnreadCount } from "@/lib/notifications/actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
+import ProjectsBrowser, {
+  type DashboardProjectRow,
+} from "./ProjectsBrowser";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +18,7 @@ type ProjectRow = {
   title: string;
   project_type: ProjectTypeId;
   updated_at: string;
+  status: string;
 };
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -73,6 +77,22 @@ function badgeForStreak(streak: number): string | null {
   return null;
 }
 
+function streakMessage(streak: number): string {
+  if (streak === 0) return "Start your streak — write something today!";
+  if (streak >= 12) return `${streak} week streak — legendary!`;
+  if (streak >= 4) return `${streak} week streak — you're on fire!`;
+  return `${streak} week streak — keep writing!`;
+}
+
+function StatChip({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-full border border-ocean/10 bg-foam/60 px-4 py-1.5 text-sm text-ocean">
+      <span className="font-display font-bold text-lagoon">{value}</span>{" "}
+      <span className="text-ocean/70">{label}</span>
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -93,7 +113,7 @@ export default async function DashboardPage() {
   try {
     const { data } = await supabase
       .from("projects")
-      .select("id, title, project_type, updated_at")
+      .select("id, title, project_type, updated_at, status")
       .eq("owner_id", user.id)
       .order("updated_at", { ascending: false });
     projects = (data ?? []) as ProjectRow[];
@@ -102,6 +122,42 @@ export default async function DashboardPage() {
   }
 
   const hasProjects = projects.length > 0;
+
+  // Collaborator counts per project (admin client bypasses RLS).
+  const admin = createAdminClient();
+  const projectIds = projects.map((p) => p.id);
+  const collaboratorCountByProject: Record<string, number> = {};
+  if (projectIds.length > 0) {
+    const { data: collabRows } = await admin
+      .from("collaborators")
+      .select("project_id")
+      .in("project_id", projectIds);
+    for (const r of (collabRows ?? []) as Array<{ project_id: string }>) {
+      collaboratorCountByProject[r.project_id] =
+        (collaboratorCountByProject[r.project_id] ?? 0) + 1;
+    }
+  }
+
+  const enriched: DashboardProjectRow[] = projects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    project_type: p.project_type,
+    updated_at: p.updated_at,
+    status: String(p.status ?? "active"),
+    collaborator_count: collaboratorCountByProject[p.id] ?? 1,
+  }));
+
+  const totalProjects = enriched.length;
+  const activeCollaborations = enriched.filter(
+    (p) => p.collaborator_count > 1 && p.status !== "completed",
+  ).length;
+  const completedCount = enriched.filter(
+    (p) => p.status === "completed",
+  ).length;
+  const mostRecent = enriched[0];
+  const mostRecentMeta = mostRecent
+    ? PROJECT_TYPES.find((t) => t.id === mostRecent.project_type)
+    : null;
   const unreadNotifications = await getUnreadCount();
 
   // Writing streak — consecutive weeks (ending this week) with at least
@@ -169,49 +225,61 @@ export default async function DashboardPage() {
           <p className="mt-3 font-display text-lg text-ocean/70 sm:text-xl">
             What are you creating today?
           </p>
-          {streak > 0 && (
-            <div className="mt-5 inline-flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm">
-              <span className="text-xl" aria-hidden>
-                🔥
+          <div className="mt-5 inline-flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm">
+            <span className="text-xl" aria-hidden>
+              {streak === 0 ? "✨" : streak >= 12 ? "⭐" : "🔥"}
+            </span>
+            <span className="font-display text-sm font-semibold text-ocean">
+              {streakMessage(streak)}
+            </span>
+            {streakBadge && (
+              <span
+                style={{ backgroundColor: "#0BBFBF", color: "white" }}
+                className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+              >
+                {streakBadge}
               </span>
-              <span className="font-display text-sm font-semibold text-ocean">
-                {streak}-week streak
-                {streak >= 2 ? " — keep going!" : " — you're on a roll!"}
-              </span>
-              {streakBadge && (
-                <span
-                  style={{ backgroundColor: "#0BBFBF", color: "white" }}
-                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                >
-                  {streakBadge}
-                </span>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </section>
 
-        <section className="mt-12">
-          {hasProjects ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((p) => {
-                const meta = PROJECT_TYPES.find((t) => t.id === p.project_type);
-                return (
-                  <Link
-                    key={p.id}
-                    href={`/projects/${p.id}`}
-                    className="rounded-2xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-ocean/60">
-                      <span aria-hidden>{meta?.emoji ?? "✨"}</span>
-                      <span>{meta?.label ?? p.project_type}</span>
-                    </div>
-                    <div className="mt-3 font-display text-xl font-bold text-ocean">
-                      {p.title}
-                    </div>
-                  </Link>
-                );
-              })}
+        {hasProjects && (
+          <section className="mt-8">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatChip label="Projects" value={totalProjects} />
+              <StatChip label="Active collaborations" value={activeCollaborations} />
+              <StatChip label="Completed" value={completedCount} />
             </div>
+          </section>
+        )}
+
+        {mostRecent && (
+          <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-6">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-wider text-lagoon">
+                Continue where you left off
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs text-ocean/60">
+                <span aria-hidden>{mostRecentMeta?.emoji ?? "✨"}</span>
+                <span>{mostRecentMeta?.label ?? mostRecent.project_type}</span>
+              </div>
+              <div className="mt-1 truncate font-display text-2xl font-bold text-ocean">
+                {mostRecent.title}
+              </div>
+            </div>
+            <Link
+              href={`/projects/${mostRecent.id}`}
+              style={{ backgroundColor: "#FF6B47", color: "white" }}
+              className="mt-4 inline-block rounded-full px-5 py-2.5 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95 sm:mt-0"
+            >
+              Continue writing →
+            </Link>
+          </section>
+        )}
+
+        <section className="mt-10">
+          {hasProjects ? (
+            <ProjectsBrowser projects={enriched} />
           ) : (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ocean/20 bg-white/60 px-6 py-20 text-center">
               <p className="font-display text-xl font-semibold text-ocean">

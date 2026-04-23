@@ -1,10 +1,79 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
+import { buildTeaser } from "@/lib/shareTeaser";
 import FeedbackForm from "./FeedbackForm";
 
 export const dynamic = "force-dynamic";
+
+function publicOrigin(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL)
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const h = headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  if (host) return `${proto}://${host}`;
+  return "https://fabcollab.vercel.app";
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { token: string };
+}): Promise<Metadata> {
+  const admin = createAdminClient();
+  const { data: project } = await admin
+    .from("projects")
+    .select("id, title")
+    .eq("feedback_token", params.token)
+    .maybeSingle();
+  if (!project) return { title: "Feedback · Fab Collab" };
+
+  const { data: firstSection } = await admin
+    .from("sections")
+    .select("id")
+    .eq("project_id", project.id)
+    .order("position", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  let firstContent = "";
+  if (firstSection) {
+    const { data: snap } = await admin
+      .from("content_snapshots")
+      .select("content_text")
+      .eq("section_id", firstSection.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    firstContent = (snap?.content_text as string | null) ?? "";
+  }
+
+  const title = `${project.title} — a collaboration on Fab Collab`;
+  const description =
+    buildTeaser(firstContent) ||
+    `Read the collaboration and leave feedback on Fab Collab.`;
+  const url = `${publicOrigin()}/feedback/${params.token}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
+}
 
 type SectionRow = { id: string; title: string | null; position: number };
 
