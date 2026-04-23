@@ -7,7 +7,9 @@ import {
   aiAssist,
   changeCollaboratorRole,
   changeInvitationRole,
+  ensureFeedbackToken,
   inviteCollaborator,
+  logDistributionClick,
   passTurn,
   revokeInvitation,
   saveSection,
@@ -22,6 +24,9 @@ import ExportMenu from "@/components/ExportMenu";
 import CompletionModal, {
   type CompletionContributor,
 } from "@/components/CompletionModal";
+import CommentsPanel, {
+  type PanelCollaborator,
+} from "@/components/CommentsPanel";
 
 type Section = { id: string; title: string | null; position: number };
 
@@ -73,6 +78,8 @@ type Props = {
   isMyTurn: boolean;
   lastEditorBySection: Record<string, LastEditor | null>;
   unreadNotifications: number;
+  commentCountsBySection: Record<string, number>;
+  userId: string;
 };
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -115,6 +122,8 @@ export default function ProjectEditor({
   isMyTurn,
   lastEditorBySection,
   unreadNotifications,
+  commentCountsBySection,
+  userId,
 }: Props) {
   const router = useRouter();
   const typeMeta = PROJECT_TYPES.find((t) => t.id === project.project_type);
@@ -137,6 +146,16 @@ export default function ProjectEditor({
   const [shareOpen, setShareOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const [callMenuOpen, setCallMenuOpen] = useState(false);
+  const [commentsFor, setCommentsFor] = useState<string | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>(
+    commentCountsBySection,
+  );
+  const [feedbackBusy, setFeedbackBusy] = useState(false);
+  const [distributeBusy, setDistributeBusy] = useState(false);
+
+  useEffect(() => {
+    setCommentCounts(commentCountsBySection);
+  }, [commentCountsBySection]);
   const [callToast, setCallToast] = useState<string | null>(null);
   const callMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -240,6 +259,38 @@ export default function ProjectEditor({
     } finally {
       setPassing(false);
     }
+  };
+
+  const handleGetFeedback = async () => {
+    if (feedbackBusy) return;
+    setFeedbackBusy(true);
+    const result = await ensureFeedbackToken({ projectId: project.id });
+    setFeedbackBusy(false);
+    if ("error" in result) {
+      setCallToast(result.error);
+      setTimeout(() => setCallToast(null), 2500);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(result.url);
+    } catch {
+      window.prompt("Copy this feedback link:", result.url);
+    }
+    setCallToast("Feedback link copied!");
+    setTimeout(() => setCallToast(null), 2000);
+  };
+
+  const handleDistribute = async () => {
+    if (distributeBusy) return;
+    setDistributeBusy(true);
+    void logDistributionClick({
+      projectId: project.id,
+      destination: "distrokid",
+    });
+    const url =
+      "https://distrokid.com/?utm_source=fabcollab&utm_medium=referral&utm_campaign=distribute_button";
+    window.open(url, "_blank", "noopener");
+    setTimeout(() => setDistributeBusy(false), 500);
   };
 
   const handleCallOption = async (id: CallOption["id"]) => {
@@ -348,6 +399,26 @@ export default function ProjectEditor({
                 {project.status === "completed" ? "🏆 Completed" : "🏁 Mark as complete"}
               </button>
             )}
+            {isOwner && (
+              <button
+                type="button"
+                onClick={handleGetFeedback}
+                disabled={feedbackBusy}
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {feedbackBusy ? "Generating…" : "💬 Get feedback"}
+              </button>
+            )}
+            {project.project_type === "song" && project.status === "completed" && (
+              <button
+                type="button"
+                onClick={handleDistribute}
+                disabled={distributeBusy}
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                🎵 Distribute
+              </button>
+            )}
             <ExportMenu
               projectTitle={project.title}
               sections={sections.map((s) => ({
@@ -426,12 +497,34 @@ export default function ProjectEditor({
                   <span className="text-xs font-semibold uppercase tracking-wider text-lagoon">
                     {s.title ?? `Section ${s.position + 1}`}
                   </span>
-                  <span
-                    style={pillStyle}
-                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                  >
-                    {pillText}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCommentsFor(s.id);
+                      }}
+                      aria-label={`Comments on ${s.title ?? "section"}`}
+                      className="relative flex h-7 w-7 items-center justify-center rounded-full border border-ocean/15 bg-white text-sm text-ocean transition hover:bg-ocean hover:text-white"
+                    >
+                      💬
+                      {(commentCounts[s.id] ?? 0) > 0 && (
+                        <span
+                          aria-hidden
+                          style={{ backgroundColor: "#FF6B47", color: "white" }}
+                          className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none"
+                        >
+                          {commentCounts[s.id]}
+                        </span>
+                      )}
+                    </button>
+                    <span
+                      style={pillStyle}
+                      className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                    >
+                      {pillText}
+                    </span>
+                  </div>
                 </div>
                 <textarea
                   value={content[s.id] ?? ""}
@@ -586,6 +679,26 @@ export default function ProjectEditor({
         >
           {callToast}
         </div>
+      )}
+
+      {commentsFor && (
+        <CommentsPanel
+          sectionId={commentsFor}
+          sectionTitle={
+            sections.find((s) => s.id === commentsFor)?.title ?? "Section"
+          }
+          isOwner={isOwner}
+          currentUserId={userId}
+          collaborators={collaborators.map<PanelCollaborator>((c) => ({
+            user_id: c.user_id,
+            name: c.display_name?.trim() || c.email || "Someone",
+            color: c.color,
+          }))}
+          onClose={() => setCommentsFor(null)}
+          onCountChange={(n) =>
+            setCommentCounts((prev) => ({ ...prev, [commentsFor]: n }))
+          }
+        />
       )}
 
       {completionOpen && (

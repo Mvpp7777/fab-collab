@@ -223,6 +223,22 @@ export default async function ProjectPage({
     colorForTurnOrder(myCollab?.turn_order ?? 1);
   const unreadNotifications = await getUnreadCount();
 
+  // Comment counts per section
+  const commentCountsBySection: Record<string, number> = {};
+  if (sections.length > 0) {
+    const { data: commentRows } = await admin
+      .from("comments")
+      .select("section_id")
+      .in(
+        "section_id",
+        sections.map((s) => s.id),
+      );
+    for (const row of (commentRows ?? []) as Array<{ section_id: string }>) {
+      commentCountsBySection[row.section_id] =
+        (commentCountsBySection[row.section_id] ?? 0) + 1;
+    }
+  }
+
   return (
     <ProjectEditor
       project={{
@@ -249,6 +265,8 @@ export default async function ProjectPage({
       isMyTurn={isMyTurn}
       lastEditorBySection={lastEditorBySection}
       unreadNotifications={unreadNotifications}
+      commentCountsBySection={commentCountsBySection}
+      userId={user.id}
     />
   );
 }

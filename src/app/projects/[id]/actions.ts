@@ -524,3 +524,236 @@ export async function setProjectPublic(params: {
 
   return { ok: true, isPublic: Boolean(params.isPublic) };
 }
+
+// =============================================================================
+// Comments
+// =============================================================================
+
+export type CommentRow = {
+  id: string;
+  section_id: string;
+  user_id: string | null;
+  parent_id: string | null;
+  body: string;
+  resolved: boolean;
+  resolved_by: string | null;
+  created_at: string;
+};
+
+export type CommentsResult =
+  | { ok: true; items: CommentRow[] }
+  | { error: string };
+
+export async function getComments(params: {
+  sectionId: string;
+}): Promise<CommentsResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data, error } = await supabase
+    .from("comments")
+    .select(
+      "id, section_id, user_id, parent_id, body, resolved, resolved_by, created_at",
+    )
+    .eq("section_id", params.sectionId)
+    .order("created_at", { ascending: true });
+  if (error) return { error: error.message };
+  return { ok: true, items: (data ?? []) as CommentRow[] };
+}
+
+export type AddCommentResult =
+  | { ok: true; comment: CommentRow }
+  | { error: string };
+
+export async function addComment(params: {
+  sectionId: string;
+  body: string;
+  parentId?: string | null;
+}): Promise<AddCommentResult> {
+  const body = params.body.trim();
+  if (!body) return { error: "Comment cannot be empty." };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data, error } = await supabase
+    .from("comments")
+    .insert({
+      section_id: params.sectionId,
+      user_id: user.id,
+      parent_id: params.parentId ?? null,
+      body,
+      resolved: false,
+    })
+    .select(
+      "id, section_id, user_id, parent_id, body, resolved, resolved_by, created_at",
+    )
+    .single();
+  if (error || !data) {
+    return { error: error?.message ?? "Failed to add comment." };
+  }
+
+  // Fire-and-forget: notify other collaborators about the new comment.
+  void notifyCommentCreated({
+    commenterId: user.id,
+    sectionId: params.sectionId,
+  });
+
+  return { ok: true, comment: data as CommentRow };
+}
+
+async function notifyCommentCreated(params: {
+  commenterId: string;
+  sectionId: string;
+}): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { data: section } = await admin
+      .from("sections")
+      .select("id, title, project_id, projects(id, title)")
+      .eq("id", params.sectionId)
+      .maybeSingle();
+    if (!section) return;
+    const projRel = section.projects as
+      | { id: string; title: string }
+      | Array<{ id: string; title: string }>
+      | null;
+    const project = Array.isArray(projRel) ? projRel[0] : projRel;
+    if (!project) return;
+
+    const { data: commenter } = await admin
+      .from("users")
+      .select("display_name")
+      .eq("id", params.commenterId)
+      .maybeSingle();
+    const name = commenter?.display_name?.trim() || "A collaborator";
+
+    const { data: others } = await admin
+      .from("collaborators")
+      .select("user_id")
+      .eq("project_id", project.id)
+      .neq("user_id", params.commenterId);
+
+    const rows =
+      others?.map((o) => ({
+        user_id: o.user_id,
+        type: "comment_added",
+        project_id: project.id,
+        body: `${name} commented on ${section.title ?? "a section"} in ${project.title}`,
+        link: `/projects/${project.id}`,
+        read: false,
+      })) ?? [];
+    if (rows.length > 0) {
+      await admin.from("notifications").insert(rows);
+    }
+  } catch {
+    // best-effort; ignore notification failures
+  }
+}
+
+export type ResolveCommentResult = { ok: true } | { error: string };
+
+export async function setCommentResolved(params: {
+  commentId: string;
+  resolved: boolean;
+}): Promise<ResolveCommentResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("comments")
+    .update({
+      resolved: params.resolved,
+      resolved_by: params.resolved ? user.id : null,
+    })
+    .eq("id", params.commentId);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+// =============================================================================
+// Public feedback link
+// =============================================================================
+
+export type EnsureFeedbackTokenResult =
+  | { ok: true; url: string; token: string }
+  | { error: string };
+
+export async function ensureFeedbackToken(params: {
+  projectId: string;
+}): Promise<EnsureFeedbackTokenResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, owner_id, feedback_token")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found." };
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can generate a feedback link." };
+  }
+
+  let token = project.feedback_token as string | null;
+  if (!token) {
+    token = randomToken();
+    const { error } = await supabase
+      .from("projects")
+      .update({ feedback_token: token })
+      .eq("id", params.projectId);
+    if (error) return { error: error.message };
+  }
+
+  const origin = getOrigin();
+  return { ok: true, token, url: `${origin}/feedback/${token}` };
+}
+
+function randomToken(): string {
+  const chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let s = "";
+  for (let i = 0; i < 24; i++) {
+    s += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return s;
+}
+
+// =============================================================================
+// Distribution click tracking (partner CTAs)
+// =============================================================================
+
+export type LogDistributionClickResult =
+  | { ok: true }
+  | { error: string };
+
+export async function logDistributionClick(params: {
+  projectId: string;
+  destination: string;
+}): Promise<LogDistributionClickResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase.from("distribution_clicks").insert({
+    user_id: user.id,
+    project_id: params.projectId,
+    destination: params.destination,
+  });
+  if (error) return { error: error.message };
+  return { ok: true };
+}
