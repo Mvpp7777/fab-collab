@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { createProject, type CreateProjectResult } from "./actions";
 import { PROJECT_TYPES, type ProjectTypeId } from "@/lib/projectTypes";
+import { GENRE_OPTIONS, POPULAR_TYPES } from "@/lib/genres";
 
 export default function NewProjectPage() {
   const [state, formAction] = useFormState<
@@ -14,6 +15,18 @@ export default function NewProjectPage() {
 
   const [selectedType, setSelectedType] = useState<ProjectTypeId | "">("");
   const [collabMode, setCollabMode] = useState<"relay" | "live">("relay");
+  const [search, setSearch] = useState("");
+  const [description, setDescription] = useState("");
+  const query = search.trim().toLowerCase();
+  const filteredTypes = PROJECT_TYPES.filter((t) => {
+    if (!query) return true;
+    return (
+      t.label.toLowerCase().includes(query) ||
+      t.description.toLowerCase().includes(query) ||
+      t.category.toLowerCase().includes(query)
+    );
+  });
+  const genres = selectedType ? (GENRE_OPTIONS as Record<string, string[] | undefined>)[selectedType] : undefined;
 
   return (
     <div className="min-h-screen bg-foam">
@@ -52,10 +65,24 @@ export default function NewProjectPage() {
           <input type="hidden" name="project_type" value={selectedType} />
           <input type="hidden" name="collab_mode" value={collabMode} />
 
+          <div>
+            <label className="block">
+              <span className="sr-only">Search project types</span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search project types — e.g. song, business…"
+                className="w-full rounded-full border border-ocean/15 bg-white px-4 py-2 text-sm text-ocean outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/30"
+              />
+            </label>
+          </div>
+
           {(["creative", "professional", "think_tank"] as const).map((category) => {
-            const typesInCategory = PROJECT_TYPES.filter(
+            const typesInCategory = filteredTypes.filter(
               (t) => t.category === category,
             );
+            if (typesInCategory.length === 0) return null;
             const heading =
               category === "creative"
                 ? "Creative projects"
@@ -84,8 +111,15 @@ export default function NewProjectPage() {
                             : "border-transparent hover:border-ocean/15",
                         ].join(" ")}
                       >
-                        <div className="text-3xl" aria-hidden>
-                          {t.emoji}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-3xl" aria-hidden>
+                            {t.emoji}
+                          </div>
+                          {POPULAR_TYPES.includes(t.id) && (
+                            <span className="rounded-full bg-coral/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
+                              Popular
+                            </span>
+                          )}
                         </div>
                         <div className="mt-3 font-display text-lg font-bold text-ocean">
                           {t.label}
@@ -143,6 +177,43 @@ export default function NewProjectPage() {
                   : "Write together in real time."}
               </p>
             </div>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 flex items-center justify-between text-sm font-medium text-ocean">
+                <span>Description (optional)</span>
+                <span className="text-xs text-ocean/50">{description.length}/280</span>
+              </span>
+              <textarea
+                name="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value.slice(0, 280))}
+                rows={3}
+                maxLength={280}
+                placeholder="One or two sentences about this project."
+                className="w-full resize-y rounded-lg border border-ocean/15 bg-white px-3 py-2 text-ocean outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/30"
+              />
+            </label>
+            {genres && genres.length > 0 && (
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-ocean">
+                  Genre
+                </span>
+                <select
+                  name="genre"
+                  defaultValue=""
+                  className="w-full rounded-lg border border-ocean/15 bg-white px-3 py-2 text-ocean focus:border-lagoon focus:outline-none"
+                >
+                  <option value="">Pick a genre</option>
+                  {genres.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
 
           {state && "error" in state && (

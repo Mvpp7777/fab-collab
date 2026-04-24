@@ -8,6 +8,7 @@ import {
   markNotificationRead,
   type NotificationRow,
 } from "@/lib/notifications/actions";
+import { createClient } from "@/lib/supabase/client";
 
 export default function NotificationsBell({
   initialUnread = 0,
@@ -28,6 +29,50 @@ export default function NotificationsBell({
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, [open]);
+
+  // Live-update unread count when a new notification arrives via Supabase realtime.
+  useEffect(() => {
+    const client = createClient();
+    let cancelled = false;
+
+    const subscribe = async () => {
+      const {
+        data: { user },
+      } = await client.auth.getUser();
+      if (cancelled || !user) return;
+
+      const ch = client
+        .channel(`notifications-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const row = payload.new as NotificationRow;
+            setUnread((u) => u + (row.read ? 0 : 1));
+            setItems((list) => [row, ...list].slice(0, 20));
+          },
+        )
+        .subscribe();
+
+      return () => {
+        void client.removeChannel(ch);
+      };
+    };
+
+    let cleanup: (() => void) | undefined;
+    subscribe().then((fn) => {
+      if (fn) cleanup = fn;
+    });
+    return () => {
+      cancelled = true;
+      if (cleanup) cleanup();
+    };
+  }, []);
 
   const openDropdown = async () => {
     setOpen((v) => !v);

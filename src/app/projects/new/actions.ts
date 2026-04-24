@@ -18,6 +18,8 @@ export async function createProject(
   const title = String(formData.get("title") ?? "").trim();
   const projectType = String(formData.get("project_type") ?? "") as ProjectTypeId;
   const collabMode = String(formData.get("collab_mode") ?? "relay");
+  const description = String(formData.get("description") ?? "").trim().slice(0, 280);
+  const genre = String(formData.get("genre") ?? "").trim();
 
   if (!title) return { error: "Please enter a title." };
   if (!PROJECT_TYPES.some((t) => t.id === projectType)) {
@@ -61,6 +63,8 @@ export async function createProject(
       project_type: projectType,
       collab_mode: collabMode,
       status: "active",
+      description: description || null,
+      genre: genre || null,
     })
     .select("id")
     .single();

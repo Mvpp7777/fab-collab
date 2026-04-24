@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Fab Collab — Write it together. Get discovered. Get paid.",
@@ -69,6 +70,7 @@ export default function Landing() {
             <Link href="/experts" className="hidden hover:text-ocean sm:inline">Experts</Link>
             <Link href="/industry" className="hidden hover:text-ocean sm:inline">Industry</Link>
             <Link href="/auth/login" className="hover:text-ocean">Log in</Link>
+            <ThemeToggle />
             <Link
               href="/auth/signup"
               style={{ backgroundColor: "#FF6B47", color: "white" }}

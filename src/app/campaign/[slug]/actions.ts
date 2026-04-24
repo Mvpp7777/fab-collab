@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { colorForTurnOrder } from "@/lib/colors";
+import { checkAndAwardBadges } from "@/lib/badges/award";
 
 export type JoinResult =
   | { ok: true; projectId: string }
@@ -107,6 +108,9 @@ export async function joinCampaign(params: {
     link: `/projects/${campaign.project_id}`,
     read: false,
   });
+
+  // Badge check for campaign owner (Viral at 50+).
+  void checkAndAwardBadges(campaign.owner_id);
 
   // Milestone notifications to campaign owner
   await maybeFireMilestone({

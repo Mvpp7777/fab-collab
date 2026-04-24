@@ -98,6 +98,11 @@ export default async function FeedbackTokenPage({
 
   if (!project) notFound();
 
+  // Fire-and-forget view log for owner analytics.
+  void admin
+    .from("feedback_page_views")
+    .insert({ project_id: project.id, token: params.token });
+
   const { data: sectionsData } = await admin
     .from("sections")
     .select("id, title, position")

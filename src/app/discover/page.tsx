@@ -33,7 +33,13 @@ type UserNameRow = {
   display_name: string | null;
 };
 
-export default async function DiscoverIndex() {
+export default async function DiscoverIndex({
+  searchParams,
+}: {
+  searchParams: { genre?: string; q?: string };
+}) {
+  const genreFilter = (searchParams.genre ?? "").trim();
+  const searchQuery = (searchParams.q ?? "").trim();
   const admin = createAdminClient();
 
   const { data: campaignRows } = await admin
@@ -78,13 +84,16 @@ export default async function DiscoverIndex() {
     };
   });
 
-  const { data: projectsData } = await admin
+  let projectsQuery = admin
     .from("projects")
-    .select("id, title, project_type, completed_at, updated_at, license")
+    .select("id, title, project_type, completed_at, updated_at, license, genre")
     .eq("is_public", true)
     .eq("status", "completed")
     .order("completed_at", { ascending: false, nullsFirst: false })
     .limit(60);
+  if (genreFilter) projectsQuery = projectsQuery.eq("genre", genreFilter);
+  if (searchQuery) projectsQuery = projectsQuery.ilike("title", `%${searchQuery}%`);
+  const { data: projectsData } = await projectsQuery;
 
   const projects = (projectsData ?? []) as DiscoverProjectRow[];
   const projectIds = projects.map((p) => p.id);
@@ -173,6 +182,41 @@ export default async function DiscoverIndex() {
             Completed projects shared by the Fab Collab community.
           </p>
         </section>
+
+        <form
+          method="get"
+          className="mt-6 flex flex-wrap items-center gap-2"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={searchQuery}
+            placeholder="Search titles…"
+            className="flex-1 rounded-full border border-ocean/15 bg-white px-4 py-2 text-sm text-ocean outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/30"
+          />
+          <select
+            name="genre"
+            defaultValue={genreFilter}
+            className="rounded-full border border-ocean/15 bg-white px-3 py-2 text-sm text-ocean focus:border-lagoon focus:outline-none"
+          >
+            <option value="">All genres</option>
+            <optgroup label="Songs">
+              {["Pop","Country","Hip-Hop","Rock","R&B","Electronic","Folk","Jazz","Classical"].map(g => <option key={`s-${g}`} value={g}>{g}</option>)}
+            </optgroup>
+            <optgroup label="Screenplays">
+              {["Drama","Comedy","Thriller","Horror","Sci-Fi","Romance","Action","Documentary"].map(g => <option key={`f-${g}`} value={g}>{g}</option>)}
+            </optgroup>
+            <optgroup label="Novels">
+              {["Literary Fiction","Mystery","Fantasy","Romance","Historical"].map(g => <option key={`n-${g}`} value={g}>{g}</option>)}
+            </optgroup>
+          </select>
+          <button
+            type="submit"
+            className="rounded-full border border-ocean/15 bg-white px-4 py-2 text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
+          >
+            Filter
+          </button>
+        </form>
 
         {liveCampaigns.length > 0 && (
           <section className="mt-10">

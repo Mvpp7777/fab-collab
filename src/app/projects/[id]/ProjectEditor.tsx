@@ -28,6 +28,9 @@ import CompletionModal, {
 import CommentsPanel, {
   type PanelCollaborator,
 } from "@/components/CommentsPanel";
+import RealtimeProjectBridge from "@/components/RealtimeProjectBridge";
+import SaveTemplateButton from "@/components/SaveTemplateButton";
+import AnalyticsPanel from "@/components/AnalyticsPanel";
 
 type Section = { id: string; title: string | null; position: number };
 
@@ -154,6 +157,11 @@ export default function ProjectEditor({
   );
   const [feedbackBusy, setFeedbackBusy] = useState(false);
   const [distributeBusy, setDistributeBusy] = useState(false);
+  const [sectionFlash, setSectionFlash] = useState<
+    Record<string, { name: string; color: string; until: number }>
+  >({});
+  const [turnToast, setTurnToast] = useState<string | null>(null);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
 
   useEffect(() => {
     setCommentCounts(commentCountsBySection);
@@ -210,6 +218,7 @@ export default function ProjectEditor({
       sectionText: activeText,
       projectType: project.project_type,
       assistType,
+      projectId: project.id,
     });
     setAiLoading(false);
     if ("error" in result) setAiError(result.error);
@@ -294,6 +303,57 @@ export default function ProjectEditor({
     window.open(url, "_blank", "noopener");
     setTimeout(() => setDistributeBusy(false), 500);
   };
+
+  const handleSectionSnapshot = useCallback(
+    (row: {
+      section_id: string;
+      content_text: string;
+      saved_by: string | null;
+    }) => {
+      if (row.saved_by && row.saved_by === userId) return; // ignore own writes
+      setContent((c) => ({ ...c, [row.section_id]: row.content_text }));
+      const editor = collaborators.find((c) => c.user_id === row.saved_by);
+      if (editor) {
+        const entry = {
+          name: editor.display_name?.trim() || editor.email || "Someone",
+          color: editor.color,
+          until: Date.now() + 2500,
+        };
+        setSectionFlash((prev) => ({ ...prev, [row.section_id]: entry }));
+        setTimeout(() => {
+          setSectionFlash((prev) => {
+            const next = { ...prev };
+            if (next[row.section_id] && next[row.section_id].until <= Date.now()) {
+              delete next[row.section_id];
+            }
+            return next;
+          });
+        }, 2600);
+      }
+    },
+    [userId, collaborators],
+  );
+
+  const handleRelayChange = useCallback(
+    (p: {
+      old: { current_holder: string | null };
+      new: { current_holder: string | null };
+    }) => {
+      const prev = p.old.current_holder;
+      const next = p.new.current_holder;
+      if (prev === next) return;
+      const fromName =
+        collaborators.find((c) => c.user_id === prev)?.display_name?.trim() ||
+        "Someone";
+      const toName =
+        collaborators.find((c) => c.user_id === next)?.display_name?.trim() ||
+        "the next collaborator";
+      setTurnToast(`${fromName} just passed the turn to ${toName}`);
+      setTimeout(() => setTurnToast(null), 3500);
+      router.refresh();
+    },
+    [collaborators, router],
+  );
 
   const handleCallOption = async (id: CallOption["id"]) => {
     setCallMenuOpen(false);
@@ -446,6 +506,19 @@ export default function ProjectEditor({
                 <span className="hidden sm:ml-1 sm:inline">Distribute</span>
               </button>
             )}
+            {isOwner && (
+              <SaveTemplateButton projectId={project.id} projectTitle={project.title} />
+            )}
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setAnalyticsOpen(true)}
+                title="Analytics"
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
+              >
+                📊<span className="hidden sm:ml-1 sm:inline">Analytics</span>
+              </button>
+            )}
             <ExportMenu
               projectTitle={project.title}
               sections={sections.map((s) => ({
@@ -476,6 +549,13 @@ export default function ProjectEditor({
         </div>
       </header>
 
+      <RealtimeProjectBridge
+        projectId={project.id}
+        sectionIds={sections.map((s) => s.id)}
+        onSectionSnapshot={handleSectionSnapshot}
+        onRelayChange={handleRelayChange}
+      />
+
       {passBanner && (
         <div
           className={[
@@ -484,6 +564,16 @@ export default function ProjectEditor({
           ].join(" ")}
         >
           {passBanner.text}
+        </div>
+      )}
+
+      {turnToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-lagoon px-5 py-2 font-display text-sm font-semibold text-white shadow-lg"
+        >
+          {turnToast}
         </div>
       )}
 
@@ -564,7 +654,14 @@ export default function ProjectEditor({
                   className="mt-3 w-full resize-y rounded-lg border border-ocean/10 bg-foam/50 px-3 py-2 text-ocean outline-none transition placeholder:text-ocean/40 focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 read-only:cursor-not-allowed read-only:bg-ocean/5"
                 />
                 <div className="mt-3 flex items-center justify-between text-xs">
-                  {lastEditor ? (
+                  {sectionFlash[s.id] ? (
+                    <span
+                      style={{ color: sectionFlash[s.id].color }}
+                      className="animate-pulse font-semibold"
+                    >
+                      Updated by {sectionFlash[s.id].name}
+                    </span>
+                  ) : lastEditor ? (
                     <span style={{ color: lastEditor.color }} className="font-medium">
                       Last edited by {lastEditor.name}
                     </span>
@@ -706,6 +803,13 @@ export default function ProjectEditor({
         >
           {callToast}
         </div>
+      )}
+
+      {analyticsOpen && (
+        <AnalyticsPanel
+          projectId={project.id}
+          onClose={() => setAnalyticsOpen(false)}
+        />
       )}
 
       {commentsFor && (

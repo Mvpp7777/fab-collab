@@ -25,6 +25,7 @@ export default function ProjectsBrowser({
   const [sort, setSort] = useState<Sort>("recent");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [search, setSearch] = useState("");
 
   const typesInUse = useMemo(() => {
     const seen = new Set<ProjectTypeId>();
@@ -33,9 +34,11 @@ export default function ProjectsBrowser({
   }, [projects]);
 
   const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
     const filtered = projects.filter((p) => {
       if (typeFilter !== "all" && p.project_type !== typeFilter) return false;
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (q && !p.title.toLowerCase().includes(q)) return false;
       return true;
     });
     const sorted = [...filtered];
@@ -52,11 +55,18 @@ export default function ProjectsBrowser({
       }
     });
     return sorted;
-  }, [projects, sort, typeFilter, statusFilter]);
+  }, [projects, sort, typeFilter, statusFilter, search]);
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search your projects…"
+          className="flex-1 min-w-[180px] rounded-full border border-ocean/15 bg-white px-3 py-1.5 text-sm text-ocean focus:border-lagoon focus:outline-none"
+        />
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as Sort)}

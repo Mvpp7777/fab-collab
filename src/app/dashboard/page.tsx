@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 import NotificationsBell from "@/components/NotificationsBell";
 import OnboardingModal from "@/components/OnboardingModal";
+import GettingStartedChecklist from "@/components/GettingStartedChecklist";
+import ThemeToggle from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUnreadCount } from "@/lib/notifications/actions";
@@ -166,6 +168,39 @@ export default async function DashboardPage() {
   const streak = await computeStreak(user.id);
   const streakBadge = badgeForStreak(streak);
 
+  // Username for profile link (may be null if user hasn't completed profile yet).
+  const { data: profileRow } = await admin
+    .from("users")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
+  const myUsername = (profileRow?.username as string | null) ?? null;
+
+  // Getting-started checklist hints (server-derived).
+  const hintsHasProject = enriched.length > 0;
+  const hintsHasCollaborator = enriched.some((p) => p.collaborator_count > 1);
+  const hintsHasCompleted = enriched.some((p) => p.status === "completed");
+  let hintsHasContribution = false;
+  let hintsHasFeedbackToken = false;
+  try {
+    const { count } = await admin
+      .from("content_snapshots")
+      .select("id", { count: "exact", head: true })
+      .eq("saved_by", user.id);
+    hintsHasContribution = (count ?? 0) > 0;
+  } catch {
+    /* ignore */
+  }
+  if (enriched.length > 0) {
+    const { data: tokRows } = await admin
+      .from("projects")
+      .select("id")
+      .eq("owner_id", user.id)
+      .not("feedback_token", "is", null)
+      .limit(1);
+    hintsHasFeedbackToken = (tokRows?.length ?? 0) > 0;
+  }
+
   return (
     <div className="min-h-screen bg-foam">
       {!hasProjects && <OnboardingModal userId={user.id} />}
@@ -209,9 +244,14 @@ export default async function DashboardPage() {
               + New project
             </Link>
             <NotificationsBell initialUnread={unreadNotifications} />
-            <span className="hidden text-sm text-ocean/80 sm:inline">
+            <ThemeToggle />
+            <Link
+              href={myUsername ? `/profile/${myUsername}` : "/profile/edit"}
+              className="hidden text-sm font-medium text-ocean/80 hover:text-ocean sm:inline"
+              aria-label="Your profile"
+            >
               {displayName}
-            </span>
+            </Link>
             <LogoutButton />
           </div>
         </div>
@@ -252,6 +292,17 @@ export default async function DashboardPage() {
             </div>
           </section>
         )}
+
+        <GettingStartedChecklist
+          userId={user.id}
+          hints={{
+            hasProject: hintsHasProject,
+            hasCollaborator: hintsHasCollaborator,
+            hasContribution: hintsHasContribution,
+            hasCompleted: hintsHasCompleted,
+            hasFeedbackToken: hintsHasFeedbackToken,
+          }}
+        />
 
         {mostRecent && (
           <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-6">

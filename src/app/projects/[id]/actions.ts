@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendInviteEmail, sendTurnEmail } from "@/lib/resend";
+import { checkAndAwardBadges } from "@/lib/badges/award";
 
 export type AssistType = "suggest-line" | "rhyme" | "rewrite" | "unblock";
 
@@ -25,6 +26,7 @@ export async function aiAssist(params: {
   sectionText: string;
   projectType: string;
   assistType: AssistType;
+  projectId?: string;
 }): Promise<AiAssistResult> {
   const { sectionText, projectType, assistType } = params;
 
@@ -64,6 +66,23 @@ export async function aiAssist(params: {
       .map((block) => block.text)
       .join("\n")
       .trim();
+
+    // Best-effort AI usage log for project analytics.
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("ai_assist_usage").insert({
+          user_id: user.id,
+          assist_type: assistType,
+          project_id: params.projectId ?? null,
+        });
+      }
+    } catch {
+      /* non-fatal */
+    }
 
     return { text };
   } catch (e) {
@@ -484,6 +503,8 @@ export async function markProjectComplete(params: {
     })
     .eq("id", params.projectId);
   if (error) return { error: error.message };
+
+  void checkAndAwardBadges(user.id);
 
   return {
     ok: true,

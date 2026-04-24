@@ -5,12 +5,50 @@
 :root {
   --background: #E8F8F8;
   --foreground: #1A2E2E;
+  --surface: #ffffff;
+  --surface-alt: #E8F8F8;
+}
+
+html.dark {
+  --background: #0A1A1A;
+  --foreground: #E8F8F8;
+  --surface: #0F2020;
+  --surface-alt: #0A1A1A;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-syne), Arial, Helvetica, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Dark mode surface overrides — hit the specific Tailwind classes the app uses
+   without having to retrofit dark: variants to every component. */
+html.dark .bg-foam { background-color: #0A1A1A !important; }
+html.dark .bg-white { background-color: #0F2020 !important; }
+html.dark .bg-foam\/50 { background-color: rgba(15, 32, 32, 0.6) !important; }
+html.dark .bg-foam\/60 { background-color: rgba(15, 32, 32, 0.7) !important; }
+html.dark .bg-foam\/80 { background-color: rgba(10, 26, 26, 0.85) !important; }
+html.dark .bg-foam\/90 { background-color: rgba(10, 26, 26, 0.95) !important; }
+html.dark .bg-white\/60 { background-color: rgba(15, 32, 32, 0.6) !important; }
+html.dark .bg-white\/80 { background-color: rgba(15, 32, 32, 0.8) !important; }
+
+html.dark .text-ocean { color: #E8F8F8 !important; }
+html.dark .text-ocean\/80 { color: rgba(232, 248, 248, 0.8) !important; }
+html.dark .text-ocean\/70 { color: rgba(232, 248, 248, 0.7) !important; }
+html.dark .text-ocean\/60 { color: rgba(232, 248, 248, 0.6) !important; }
+html.dark .text-ocean\/50 { color: rgba(232, 248, 248, 0.45) !important; }
+html.dark .text-ocean\/40 { color: rgba(232, 248, 248, 0.35) !important; }
+
+html.dark .border-ocean\/10 { border-color: rgba(232, 248, 248, 0.1) !important; }
+html.dark .border-ocean\/15 { border-color: rgba(232, 248, 248, 0.15) !important; }
+html.dark .border-ocean\/20 { border-color: rgba(232, 248, 248, 0.2) !important; }
+
+html.dark .shadow-sm,
+html.dark .shadow-lg,
+html.dark .shadow {
+  --tw-shadow-color: rgba(0, 0, 0, 0.5);
 }
 
 @layer utilities {

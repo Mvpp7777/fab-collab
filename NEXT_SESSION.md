@@ -63,3 +63,23 @@ rate. Fab Collab takes 20%.
 - **Mobile responsiveness** fixes on project editor top bar
 - **SEO metadata** on public pages + `robots.ts` + `sitemap.ts`
 - **Error boundaries** on dashboard and project editor
+- **Real-time project updates** via Supabase Realtime (section flashes in collaborator color, turn toasts)
+- **Public profile pages** at `/profile/[username]` (stats, badges, active campaigns, public projects)
+- **Profile editor** at `/profile/edit` (display name, username, bio, email digest toggle)
+- **Templates library** (`/templates`) — save project as template, create from template, public/official/community
+- **Badge system** (10 badges: first project, completed, 5 collaborations, etc.) with notifications on earn
+- **Analytics panel** on project editor (words by contributor, 30-day timeline, feedback, AI assists)
+- **Portfolio pages** at `/portfolio/[username]` (completed public projects, OG metadata)
+- **Weekly email digest** for users with stale turns (3+ days), respects `email_digest_enabled`
+- **Project creation improvements**: search filter, description, genre dropdown, Popular badges
+- **Getting Started checklist** on dashboard (6 items, server hints + localStorage, dismissible)
+- **Discover genre filter + title search**
+- **Dark mode** toggle in header + CSS variable overrides
+- **Admin panel** at `/admin` (users/projects/experts stats, expert approve/reject, waitlist CSV, digest trigger)
+
+## Migrations to run in Supabase (SQL editor)
+Run in order: `019_user_profiles.sql`, `020_templates.sql`, `021_badges.sql`,
+`022_analytics.sql`, `023_email_preferences.sql`, `024_project_genre.sql`.
+
+## Admin access
+Admin email is hard-coded to `lenbenti@me.com`. `/admin` returns 404 otherwise.

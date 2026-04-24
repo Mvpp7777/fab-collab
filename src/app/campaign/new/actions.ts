@@ -9,6 +9,7 @@ import {
   type ProjectTypeId,
 } from "@/lib/projectTypes";
 import { slugify } from "@/lib/slugify";
+import { checkAndAwardBadges } from "@/lib/badges/award";
 
 export type CreateCampaignResult = { error: string } | { ok: true };
 
@@ -142,6 +143,8 @@ export async function createCampaign(
       contribution_status: "writing",
     });
   }
+
+  void checkAndAwardBadges(user.id);
 
   redirect(`/campaign/${slug}`);
 }

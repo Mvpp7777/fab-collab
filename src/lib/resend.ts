@@ -210,6 +210,80 @@ export async function sendExpertApplicationNotice(params: {
   }
 }
 
+// -----------------------------------------------------------------------------
+// Weekly digest email
+// -----------------------------------------------------------------------------
+
+export async function sendDigestEmail(params: {
+  to: string;
+  userName: string;
+  pendingTurns: Array<{ title: string; url: string }>;
+  streakWeeks: number;
+  unreadNotifications: number;
+}): Promise<{ ok: boolean; message?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { ok: false, message: "RESEND_API_KEY not set" };
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: params.to,
+      subject: "Your Fab Collab projects are waiting for you 🎵",
+      html: digestHtml(params),
+      text: digestText(params),
+    });
+    if (error) return { ok: false, message: error.message ?? "send failed" };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "send failed" };
+  }
+}
+
+function digestHtml(p: {
+  userName: string;
+  pendingTurns: Array<{ title: string; url: string }>;
+  streakWeeks: number;
+  unreadNotifications: number;
+}): string {
+  const rows = p.pendingTurns
+    .map(
+      (t) =>
+        `<li style="margin:0 0 8px"><a href="${t.url}" style="color:#0BBFBF;text-decoration:none;font-weight:600">${escapeHtml(t.title)}</a></li>`,
+    )
+    .join("");
+  return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
+      <div style="font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:24px">
+        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:22px">Hi ${escapeHtml(p.userName)} 👋</h1>
+      <p style="margin:0 0 18px;color:#1A2E2E99">It's your turn on ${p.pendingTurns.length} project${p.pendingTurns.length === 1 ? "" : "s"}:</p>
+      <ul style="margin:0 0 20px;padding:0 0 0 18px;color:#1A2E2E">${rows}</ul>
+      ${p.streakWeeks > 0 ? `<p style="margin:0 0 16px;color:#1A2E2E"><strong>🔥 ${p.streakWeeks} week streak</strong> — keep it going!</p>` : ""}
+      ${p.unreadNotifications > 0 ? `<p style="margin:0 0 16px;color:#1A2E2E">${p.unreadNotifications} unread notification${p.unreadNotifications === 1 ? "" : "s"} waiting.</p>` : ""}
+      <p style="margin:24px 0 0;font-size:12px;color:#1A2E2E80">Not interested in weekly emails? Turn off "Weekly digest" in your profile settings.</p>
+    </div>
+  </body></html>`;
+}
+
+function digestText(p: {
+  userName: string;
+  pendingTurns: Array<{ title: string; url: string }>;
+  streakWeeks: number;
+  unreadNotifications: number;
+}): string {
+  const list = p.pendingTurns.map((t) => `• ${t.title}\n  ${t.url}`).join("\n");
+  return `Hi ${p.userName},
+
+It's your turn on ${p.pendingTurns.length} project${p.pendingTurns.length === 1 ? "" : "s"}:
+
+${list}
+
+${p.streakWeeks > 0 ? `🔥 ${p.streakWeeks} week streak — keep it going!\n` : ""}${p.unreadNotifications > 0 ? `${p.unreadNotifications} unread notifications waiting.\n` : ""}
+— Fab Collab`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
