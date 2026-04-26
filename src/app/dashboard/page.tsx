@@ -290,6 +290,11 @@ export default async function DashboardPage() {
               <StatChip label="Active collaborations" value={activeCollaborations} />
               <StatChip label="Completed" value={completedCount} />
             </div>
+            {completedCount > 0 && (
+              <p className="mt-3 text-xs italic text-ocean/60">
+                Completed projects are visible to industry scouts when our portal launches Summer 2026.
+              </p>
+            )}
           </section>
         )}
 

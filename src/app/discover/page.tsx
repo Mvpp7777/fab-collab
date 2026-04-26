@@ -174,6 +174,10 @@ export default async function DiscoverIndex({
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-12">
+        <div className="mb-8 rounded-2xl border border-lagoon/30 bg-lagoon/10 px-5 py-4 text-sm text-ocean">
+          🚀 Industry Scout portal coming Summer 2026 — agents and publishers will browse this gallery. Complete your projects and make them public to be ready.
+        </div>
+
         <section>
           <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-ocean sm:text-5xl">
             Discover

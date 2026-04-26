@@ -287,6 +287,9 @@ export default function CompletionModal({
               onChange={handleTogglePublic}
               disabled={busy}
             />
+            <p className="mt-2 text-xs text-ocean/70">
+              Making your project public adds it to the discovery gallery that industry professionals will browse when our Scout portal launches Summer 2026.
+            </p>
             {isPublic && (
               <LicensePicker
                 value={license}
@@ -315,6 +318,9 @@ export default function CompletionModal({
               onChange={setMakePublic}
               disabled={busy}
             />
+            <p className="mt-2 text-xs text-ocean/70">
+              Making your project public adds it to the discovery gallery that industry professionals will browse when our Scout portal launches Summer 2026.
+            </p>
             {makePublic && (
               <LicensePicker
                 value={license}

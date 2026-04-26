@@ -27,8 +27,8 @@ const FEATURES = [
   },
   {
     emoji: "🌍",
-    title: "Get Discovered",
-    body: "Share publicly and get found by agents, publishers, and labels.",
+    title: "Get Ready to Be Discovered",
+    body: "Your work is timestamped, attributed, and professionally presented the moment you complete it. Industry Scout portal opening Summer 2026.",
   },
   {
     emoji: "📹",
@@ -232,10 +232,10 @@ export default function Landing() {
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-12">
           <h2 className="font-display text-3xl font-extrabold text-ocean sm:text-4xl">
-            Are you an agent, publisher, or label?
+            Industry professionals — get early access
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base text-ocean/70 sm:text-lg">
-            Get early access to completed projects before anyone else.
+            Our Scout portal opens Summer 2026. Join 500+ agents, publishers, and labels already on the waitlist for first access to emerging talent.
           </p>
           <Link
             href="/industry"
