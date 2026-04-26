@@ -90,6 +90,51 @@ export async function aiAssist(params: {
   }
 }
 
+export type SetSectionPurchasableResult =
+  | { ok: true; purchasable: boolean; priceCents: number | null }
+  | { error: string };
+
+export async function setSectionPurchasable(params: {
+  sectionId: string;
+  purchasable: boolean;
+  priceCents: number | null;
+}): Promise<SetSectionPurchasableResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: section } = await supabase
+    .from("sections")
+    .select("id, project_id, projects(owner_id)")
+    .eq("id", params.sectionId)
+    .maybeSingle();
+  if (!section) return { error: "Section not found." };
+  const projRel = section.projects as
+    | { owner_id: string }
+    | Array<{ owner_id: string }>
+    | null;
+  const projRow = Array.isArray(projRel) ? projRel[0] : projRel;
+  if (!projRow || projRow.owner_id !== user.id) {
+    return { error: "Only the project owner can change this." };
+  }
+
+  const priceCents = params.purchasable
+    ? Math.max(100, Math.round(Number(params.priceCents ?? 0)))
+    : null;
+
+  const { error } = await supabase
+    .from("sections")
+    .update({
+      purchasable: Boolean(params.purchasable),
+      purchase_price_cents: priceCents,
+    })
+    .eq("id", params.sectionId);
+  if (error) return { error: error.message };
+  return { ok: true, purchasable: Boolean(params.purchasable), priceCents };
+}
+
 export type SaveSectionResult = { ok: true } | { error: string };
 
 export async function saveSection(params: {

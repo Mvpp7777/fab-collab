@@ -13,7 +13,13 @@ import { getUnreadCount } from "@/lib/notifications/actions";
 
 export const dynamic = "force-dynamic";
 
-type SectionRow = { id: string; title: string | null; position: number };
+type SectionRow = {
+  id: string;
+  title: string | null;
+  position: number;
+  purchasable: boolean | null;
+  purchase_price_cents: number | null;
+};
 
 type SnapshotRow = {
   section_id: string;
@@ -71,7 +77,7 @@ export default async function ProjectPage({
 
   const { data: sectionsData } = await admin
     .from("sections")
-    .select("id, title, position")
+    .select("id, title, position, purchasable, purchase_price_cents")
     .eq("project_id", project.id)
     .order("position", { ascending: true });
 

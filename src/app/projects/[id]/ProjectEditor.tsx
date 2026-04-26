@@ -13,6 +13,7 @@ import {
   passTurn,
   revokeInvitation,
   saveSection,
+  setSectionPurchasable,
   startCall,
   type AssistType,
   type Role,
@@ -32,7 +33,20 @@ import RealtimeProjectBridge from "@/components/RealtimeProjectBridge";
 import SaveTemplateButton from "@/components/SaveTemplateButton";
 import AnalyticsPanel from "@/components/AnalyticsPanel";
 
-type Section = { id: string; title: string | null; position: number };
+type Section = {
+  id: string;
+  title: string | null;
+  position: number;
+  purchasable: boolean | null;
+  purchase_price_cents: number | null;
+};
+
+const PURCHASE_PRICE_OPTIONS = [1000, 2500, 10_000, 50_000] as const;
+type PurchasePriceOption = (typeof PURCHASE_PRICE_OPTIONS)[number];
+
+function dollarsLabel(cents: number): string {
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+}
 
 type Project = {
   id: string;
@@ -160,6 +174,19 @@ export default function ProjectEditor({
   const [sectionFlash, setSectionFlash] = useState<
     Record<string, { name: string; color: string; until: number }>
   >({});
+  const [purchaseMap, setPurchaseMap] = useState<
+    Record<string, { purchasable: boolean; priceCents: number | null }>
+  >(() =>
+    Object.fromEntries(
+      sections.map((s) => [
+        s.id,
+        {
+          purchasable: Boolean(s.purchasable),
+          priceCents: s.purchase_price_cents ?? null,
+        },
+      ]),
+    ),
+  );
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
 
@@ -198,6 +225,29 @@ export default function ProjectEditor({
     const timers = debounceTimers.current;
     return () => Object.values(timers).forEach((t) => clearTimeout(t));
   }, []);
+
+  const handleSetSectionPurchase = useCallback(
+    async (sectionId: string, purchasable: boolean, priceCents: number | null) => {
+      const prev = purchaseMap[sectionId];
+      setPurchaseMap((m) => ({
+        ...m,
+        [sectionId]: {
+          purchasable,
+          priceCents: purchasable ? (priceCents ?? prev?.priceCents ?? 1000) : null,
+        },
+      }));
+      const result = await setSectionPurchasable({
+        sectionId,
+        purchasable,
+        priceCents: purchasable ? (priceCents ?? prev?.priceCents ?? 1000) : null,
+      });
+      if ("error" in result) {
+        // Revert on error.
+        setPurchaseMap((m) => ({ ...m, [sectionId]: prev }));
+      }
+    },
+    [purchaseMap],
+  );
 
   const handleChange = (sectionId: string, text: string) => {
     if (!isMyTurn) return;
@@ -611,9 +661,19 @@ export default function ProjectEditor({
                 className="cursor-pointer rounded-2xl border-2 bg-white p-5 shadow-sm transition"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-lagoon">
-                    {s.title ?? `Section ${s.position + 1}`}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-lagoon">
+                      {s.title ?? `Section ${s.position + 1}`}
+                    </span>
+                    {purchaseMap[s.id]?.purchasable && (
+                      <span
+                        style={{ backgroundColor: "#0BBFBF", color: "white" }}
+                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      >
+                        ✍️ Available to co-write
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -653,6 +713,56 @@ export default function ProjectEditor({
                   placeholder={isMyTurn ? (active ? "Start writing..." : "Click to activate") : `Waiting for ${currentHolderName}...`}
                   className="mt-3 w-full resize-y rounded-lg border border-ocean/10 bg-foam/50 px-3 py-2 text-ocean outline-none transition placeholder:text-ocean/40 focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 read-only:cursor-not-allowed read-only:bg-ocean/5"
                 />
+                {isOwner && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-ocean/10 bg-foam/40 px-3 py-2 text-xs"
+                  >
+                    <label className="flex items-center gap-2 font-medium text-ocean">
+                      <input
+                        type="checkbox"
+                        checked={purchaseMap[s.id]?.purchasable ?? false}
+                        onChange={(e) =>
+                          handleSetSectionPurchase(
+                            s.id,
+                            e.target.checked,
+                            purchaseMap[s.id]?.priceCents ?? 1000,
+                          )
+                        }
+                      />
+                      Open for purchase
+                    </label>
+                    {purchaseMap[s.id]?.purchasable && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-ocean/60">Price</span>
+                        {PURCHASE_PRICE_OPTIONS.map((p) => {
+                          const active = purchaseMap[s.id]?.priceCents === p;
+                          return (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() =>
+                                handleSetSectionPurchase(s.id, true, p as PurchasePriceOption)
+                              }
+                              style={
+                                active
+                                  ? {
+                                      backgroundColor: "#0BBFBF",
+                                      color: "white",
+                                      borderColor: "#0BBFBF",
+                                    }
+                                  : undefined
+                              }
+                              className="rounded-full border border-ocean/15 bg-white px-2 py-0.5 font-medium text-ocean transition hover:border-lagoon"
+                            >
+                              {dollarsLabel(p)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-3 flex items-center justify-between text-xs">
                   {sectionFlash[s.id] ? (
                     <span
