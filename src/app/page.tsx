@@ -5,11 +5,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 export const metadata: Metadata = {
   title: "Fab Collab — Write it together. Get discovered. Get paid.",
   description:
-    "The platform where songwriters, screenwriters, novelists, and teams create together, get feedback from the world, and get discovered by industry professionals.",
+    "The platform where creative teams, business teams, and innovators create together — with every contribution attributed, every turn accountable, and every completed project ready for the world.",
   openGraph: {
     title: "Fab Collab — Write it together. Get discovered. Get paid.",
     description:
-      "The platform where songwriters, screenwriters, novelists, and teams create together, get feedback from the world, and get discovered by industry professionals.",
+      "The platform where creative teams, business teams, and innovators create together — with every contribution attributed, every turn accountable, and every completed project ready for the world.",
     type: "website",
   },
 };
@@ -67,6 +67,7 @@ export default function Landing() {
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
             <Link href="/discover" className="hover:text-ocean">Discover</Link>
+            <a href="#for-teams" className="hidden hover:text-ocean sm:inline">For teams</a>
             <Link href="/invest" className="hidden hover:text-ocean sm:inline">Invest</Link>
             <Link href="/experts" className="hidden hover:text-ocean sm:inline">Experts</Link>
             <Link href="/industry" className="hidden hover:text-ocean sm:inline">Industry</Link>
@@ -90,9 +91,9 @@ export default function Landing() {
           Get paid.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl font-display text-lg text-ocean/70 sm:text-xl">
-          The platform where songwriters, screenwriters, novelists, and teams
-          create together, get feedback from the world, and get discovered by
-          industry professionals.
+          The platform where creative teams, business teams, and innovators
+          create together — with every contribution attributed, every turn
+          accountable, and every completed project ready for the world.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -226,6 +227,69 @@ export default function Landing() {
           >
             Start a Think Tank →
           </Link>
+        </div>
+      </section>
+
+      {/* For business teams */}
+      <section id="for-teams" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+        <div className="text-center">
+          <div className="inline-block rounded-full bg-ocean/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-ocean/70">
+            For business teams
+          </div>
+          <h2 className="mt-4 font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+            Built for teams who create together
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base text-ocean/70 sm:text-lg">
+            From marketing campaigns to legal documents to strategic plans —
+            Fab Collab gives every contributor a clear role, a clear turn,
+            and clear attribution.
+          </p>
+        </div>
+
+        <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          {[
+            {
+              emoji: "📣",
+              title: "Marketing teams",
+              body: "Co-write campaigns, briefs, and copy with your entire team. Know who wrote what and when.",
+            },
+            {
+              emoji: "⚖️",
+              title: "Legal & consulting",
+              body: "Collaborate on documents with external parties. Every edit attributed. Every version timestamped.",
+            },
+            {
+              emoji: "🚀",
+              title: "Strategy & planning",
+              body: "Run Think Tank sessions that capture every idea, every expert input, and every decision in one place.",
+            },
+          ].map((c) => (
+            <li key={c.title} className="rounded-2xl bg-white p-6 shadow-sm">
+              <div className="text-3xl" aria-hidden>
+                {c.emoji}
+              </div>
+              <h3 className="mt-3 font-display text-lg font-bold text-ocean">
+                {c.title}
+              </h3>
+              <p className="mt-2 text-sm text-ocean/70">{c.body}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/auth/signup"
+            style={{ backgroundColor: "#FF6B47", color: "white" }}
+            className="rounded-full px-5 py-2.5 font-display text-sm font-semibold shadow transition hover:brightness-110 active:scale-95"
+          >
+            Start your team project →
+          </Link>
+          <a
+            href="mailto:hello@fabcollab.com"
+            className="rounded-full border border-ocean/15 bg-white px-5 py-2.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
+          >
+            Request a demo →
+          </a>
         </div>
       </section>
 
