@@ -57,7 +57,7 @@ export default async function ProjectPage({
 
   const { data: project } = await admin
     .from("projects")
-    .select("id, title, project_type, collab_mode, status, owner_id, completed_at, is_public, license")
+    .select("id, title, project_type, collab_mode, status, owner_id, completed_at, is_public, license, is_seeking_investment")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -256,6 +256,7 @@ export default async function ProjectPage({
         completed_at: (project.completed_at as string | null) ?? null,
         is_public: Boolean(project.is_public),
         license: String(project.license ?? "all-rights-reserved"),
+        is_seeking_investment: Boolean(project.is_seeking_investment),
       }}
       sections={sections}
       initialContent={initialContent}

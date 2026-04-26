@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { submitExpertApplication } from "./actions";
+import InvestorVerificationCard from "./InvestorVerificationCard";
 
 const CATEGORIES = [
   { emoji: "🚀", label: "Founders & Entrepreneurs" },
@@ -129,6 +130,11 @@ export default function ExpertsPage() {
             <Rate label="Top investor" range="$1,000–2,000 per contribution" />
           </ul>
         </div>
+      </section>
+
+      {/* Investor verification */}
+      <section className="mx-auto max-w-2xl px-6 py-8">
+        <InvestorVerificationCard />
       </section>
 
       {/* Categories */}

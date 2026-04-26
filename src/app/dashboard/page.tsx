@@ -226,6 +226,12 @@ export default async function DashboardPage() {
               Industry
             </Link>
             <Link
+              href="/invest"
+              className="hidden text-sm font-medium text-ocean/70 transition hover:text-ocean sm:inline"
+            >
+              Invest
+            </Link>
+            <Link
               href="/experts"
               className="hidden text-sm font-medium text-ocean/70 transition hover:text-ocean sm:inline"
             >

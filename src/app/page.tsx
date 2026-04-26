@@ -67,6 +67,7 @@ export default function Landing() {
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
             <Link href="/discover" className="hover:text-ocean">Discover</Link>
+            <Link href="/invest" className="hidden hover:text-ocean sm:inline">Invest</Link>
             <Link href="/experts" className="hidden hover:text-ocean sm:inline">Experts</Link>
             <Link href="/industry" className="hidden hover:text-ocean sm:inline">Industry</Link>
             <Link href="/auth/login" className="hover:text-ocean">Log in</Link>
@@ -275,6 +276,7 @@ export default function Landing() {
           </Link>
           <nav className="flex flex-wrap items-center gap-5 text-sm font-medium text-ocean/70">
             <Link href="/discover" className="hover:text-ocean">Discover</Link>
+            <Link href="/invest" className="hover:text-ocean">Invest</Link>
             <Link href="/experts" className="hover:text-ocean">Experts</Link>
             <Link href="/industry" className="hover:text-ocean">Industry</Link>
             <Link href="/terms" className="hover:text-ocean">Terms</Link>

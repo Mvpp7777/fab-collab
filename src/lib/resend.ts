@@ -161,6 +161,63 @@ ${p.projectUrl}`;
 }
 
 // -----------------------------------------------------------------------------
+// Investor "expressed interest" — emails the investor with the team's contacts.
+// -----------------------------------------------------------------------------
+
+export async function sendInvestorInterestEmail(params: {
+  to: string;
+  investorName: string;
+  projectTitle: string;
+  ownerName: string;
+  ownerEmail: string | null;
+  message: string | null;
+}): Promise<{ ok: boolean; message?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { ok: false, message: "RESEND_API_KEY not set" };
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const subject = `Your interest in “${params.projectTitle}” has been sent`;
+  const ownerLine = params.ownerEmail
+    ? `<a href="mailto:${params.ownerEmail}" style="color:#0BBFBF">${escapeHtml(params.ownerName)} (${escapeHtml(params.ownerEmail)})</a>`
+    : escapeHtml(params.ownerName);
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
+      <div style="font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:24px">
+        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:22px">Hi ${escapeHtml(params.investorName)} 👋</h1>
+      <p style="margin:0 0 18px;color:#1A2E2E99">Thanks for expressing interest in <strong>${escapeHtml(params.projectTitle)}</strong>. The team has been notified and will reach out directly.</p>
+      <p style="margin:0 0 6px;color:#1A2E2E"><strong>Team owner:</strong> ${ownerLine}</p>
+      ${params.message ? `<p style="margin:18px 0 0;padding:12px 16px;border-left:3px solid #0BBFBF;color:#1A2E2E99;font-style:italic">Your message: ${escapeHtml(params.message)}</p>` : ""}
+      <p style="margin:24px 0 0;font-size:12px;color:#1A2E2E80">— Fab Collab Think Tank</p>
+    </div>
+  </body></html>`;
+  const text = [
+    `Hi ${params.investorName},`,
+    ``,
+    `Thanks for expressing interest in "${params.projectTitle}". The team has been notified and will reach out directly.`,
+    ``,
+    `Team owner: ${params.ownerName}${params.ownerEmail ? ` (${params.ownerEmail})` : ""}`,
+    params.message ? `\nYour message:\n${params.message}` : "",
+    ``,
+    `— Fab Collab Think Tank`,
+  ].join("\n");
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: params.to,
+      subject,
+      html,
+      text,
+    });
+    if (error) return { ok: false, message: error.message ?? "send failed" };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "send failed" };
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Expert application internal notification (plain text to team inbox)
 // -----------------------------------------------------------------------------
 

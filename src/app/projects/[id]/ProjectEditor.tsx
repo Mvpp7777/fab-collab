@@ -13,6 +13,7 @@ import {
   passTurn,
   revokeInvitation,
   saveSection,
+  setProjectSeekingInvestment,
   setSectionPurchasable,
   startCall,
   type AssistType,
@@ -57,7 +58,15 @@ type Project = {
   completed_at: string | null;
   is_public: boolean;
   license: string;
+  is_seeking_investment: boolean;
 };
+
+const THINK_TANK_TYPES: ReadonlySet<string> = new Set([
+  "think_tank",
+  "community_challenge",
+  "research_collective",
+  "innovation_sprint",
+]);
 
 export type CollaboratorEntry = {
   id: string;
@@ -189,6 +198,40 @@ export default function ProjectEditor({
   );
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [seekingInvestment, setSeekingInvestment] = useState<boolean>(
+    Boolean(project.is_seeking_investment),
+  );
+  const [investmentBusy, setInvestmentBusy] = useState(false);
+  const [investmentToast, setInvestmentToast] = useState<string | null>(null);
+
+  const isThinkTank = THINK_TANK_TYPES.has(project.project_type);
+  const canToggleInvestment =
+    isOwner && isThinkTank && project.status === "completed";
+
+  const handleToggleSeekingInvestment = useCallback(async () => {
+    if (investmentBusy) return;
+    const next = !seekingInvestment;
+    setInvestmentBusy(true);
+    setSeekingInvestment(next);
+    const result = await setProjectSeekingInvestment({
+      projectId: project.id,
+      seeking: next,
+    });
+    setInvestmentBusy(false);
+    if ("error" in result) {
+      setSeekingInvestment(!next);
+      setInvestmentToast(result.error);
+    } else {
+      setInvestmentToast(
+        next
+          ? result.notifiedInvestors > 0
+            ? `Open for investment — ${result.notifiedInvestors} investor${result.notifiedInvestors === 1 ? "" : "s"} notified.`
+            : "Open for investment."
+          : "Closed to new investor interest.",
+      );
+    }
+    setTimeout(() => setInvestmentToast(null), 4000);
+  }, [investmentBusy, project.id, seekingInvestment]);
 
   useEffect(() => {
     setCommentCounts(commentCountsBySection);
@@ -458,6 +501,16 @@ export default function ProjectEditor({
                 <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium capitalize text-ocean/70">
                   {project.collab_mode} mode
                 </span>
+                {seekingInvestment && (
+                  <Link
+                    href="/invest"
+                    style={{ backgroundColor: "#0BBFBF", color: "white" }}
+                    className="rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
+                    title="Listed on /invest — opt out from the actions toolbar"
+                  >
+                    🦈 Seeking Investment
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -556,6 +609,33 @@ export default function ProjectEditor({
                 <span className="hidden sm:ml-1 sm:inline">Distribute</span>
               </button>
             )}
+            {canToggleInvestment && (
+              <button
+                type="button"
+                onClick={handleToggleSeekingInvestment}
+                disabled={investmentBusy}
+                title={
+                  seekingInvestment
+                    ? "Listed on /invest — click to close"
+                    : "Open this Think Tank for investment"
+                }
+                style={
+                  seekingInvestment
+                    ? { backgroundColor: "#0BBFBF", color: "white", borderColor: "#0BBFBF" }
+                    : undefined
+                }
+                className="rounded-full border border-ocean/15 bg-white px-3 py-1.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                🦈
+                <span className="hidden sm:ml-1 sm:inline">
+                  {investmentBusy
+                    ? "Saving…"
+                    : seekingInvestment
+                      ? "Open for investment"
+                      : "Open for investment"}
+                </span>
+              </button>
+            )}
             {isOwner && (
               <SaveTemplateButton projectId={project.id} projectTitle={project.title} />
             )}
@@ -624,6 +704,16 @@ export default function ProjectEditor({
           className="pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-lagoon px-5 py-2 font-display text-sm font-semibold text-white shadow-lg"
         >
           {turnToast}
+        </div>
+      )}
+
+      {investmentToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-36 left-1/2 z-50 -translate-x-1/2 rounded-full bg-lagoon px-5 py-2 font-display text-sm font-semibold text-white shadow-lg"
+        >
+          {investmentToast}
         </div>
       )}
 

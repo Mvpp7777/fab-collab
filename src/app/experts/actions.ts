@@ -1,7 +1,69 @@
 "use server";
 
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendExpertApplicationNotice } from "@/lib/resend";
+
+export type InvestorStatus =
+  | {
+      signedIn: false;
+    }
+  | {
+      signedIn: true;
+      isVerified: boolean;
+      company: string | null;
+    };
+
+export async function getInvestorStatus(): Promise<InvestorStatus> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { signedIn: false };
+
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("users")
+    .select("is_verified_investor, investor_company")
+    .eq("id", user.id)
+    .maybeSingle();
+  return {
+    signedIn: true,
+    isVerified: Boolean(data?.is_verified_investor),
+    company: (data?.investor_company as string | null) ?? null,
+  };
+}
+
+export type SetInvestorStatusResult =
+  | { ok: true; isVerified: boolean; company: string | null }
+  | { error: string };
+
+export async function setInvestorStatus(params: {
+  verified: boolean;
+  company?: string | null;
+}): Promise<SetInvestorStatusResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to update your investor status." };
+
+  const admin = createAdminClient();
+  const trimmedCompany = (params.company ?? "").trim();
+  const company = trimmedCompany.length > 0 ? trimmedCompany.slice(0, 200) : null;
+  const verified = Boolean(params.verified);
+
+  const { error } = await admin
+    .from("users")
+    .update({
+      is_verified_investor: verified,
+      investor_company: company,
+      investor_verified_at: verified ? new Date().toISOString() : null,
+    })
+    .eq("id", user.id);
+  if (error) return { error: error.message };
+  return { ok: true, isVerified: verified, company };
+}
 
 export type ExpertApplyResult = { ok: true } | { error: string };
 

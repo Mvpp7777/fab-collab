@@ -629,6 +629,86 @@ export async function setProjectPublic(params: {
 }
 
 // =============================================================================
+// Think Tank — Open for Investment
+// =============================================================================
+
+const THINK_TANK_TYPES = new Set([
+  "think_tank",
+  "community_challenge",
+  "research_collective",
+  "innovation_sprint",
+]);
+
+export type SetSeekingInvestmentResult =
+  | { ok: true; isSeekingInvestment: boolean; notifiedInvestors: number }
+  | { error: string };
+
+export async function setProjectSeekingInvestment(params: {
+  projectId: string;
+  seeking: boolean;
+}): Promise<SetSeekingInvestmentResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const admin = createAdminClient();
+  const { data: project } = await admin
+    .from("projects")
+    .select("id, title, project_type, status, owner_id, is_seeking_investment")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project) return { error: "Project not found." };
+  if (project.owner_id !== user.id) {
+    return { error: "Only the project owner can change this." };
+  }
+  if (!THINK_TANK_TYPES.has(String(project.project_type))) {
+    return { error: "This project type can't be opened for investment." };
+  }
+  if (project.status !== "completed") {
+    return { error: "Mark the project complete before seeking investment." };
+  }
+
+  const wasSeeking = Boolean(project.is_seeking_investment);
+  const seeking = Boolean(params.seeking);
+
+  const { error: updateErr } = await admin
+    .from("projects")
+    .update({
+      is_seeking_investment: seeking,
+      seeking_investment_at: seeking ? new Date().toISOString() : null,
+    })
+    .eq("id", project.id);
+  if (updateErr) return { error: updateErr.message };
+
+  // Fan out to verified investors only on the off→on transition.
+  let notifiedInvestors = 0;
+  if (seeking && !wasSeeking) {
+    const { data: investors } = await admin
+      .from("users")
+      .select("id")
+      .eq("is_verified_investor", true);
+    const rows = (investors ?? [])
+      .filter((u) => u.id !== user.id)
+      .map((u) => ({
+        user_id: u.id,
+        type: "investment_opportunity",
+        project_id: project.id,
+        body: `New Think Tank seeking investment: ${project.title}`,
+        link: `/invest`,
+        read: false,
+      }));
+    if (rows.length > 0) {
+      await admin.from("notifications").insert(rows);
+      notifiedInvestors = rows.length;
+    }
+  }
+
+  return { ok: true, isSeekingInvestment: seeking, notifiedInvestors };
+}
+
+// =============================================================================
 // Comments
 // =============================================================================
 
