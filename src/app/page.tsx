@@ -60,7 +60,10 @@ export default function Landing() {
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" aria-label="Collab It home">
-            <span className="font-display text-2xl font-extrabold tracking-tight">
+            <span
+              style={{ paddingBottom: "4px" }}
+              className="inline-block font-display text-2xl font-extrabold leading-normal tracking-tight"
+            >
               <span className="text-ocean">collab</span>
               <span className="text-lagoon">it</span>
             </span>
@@ -86,12 +89,21 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 text-center sm:pt-28">
-        <h1 className="pb-1 font-display text-5xl font-extrabold leading-[1.15] tracking-tight text-ocean sm:text-6xl md:text-7xl">
+        <h1
+          style={{ paddingBottom: "4px" }}
+          className="font-display text-5xl font-extrabold leading-normal tracking-tight text-ocean sm:text-6xl md:text-7xl"
+        >
           Create it together. <span className="text-lagoon">Get discovered.</span>{" "}
           Get paid.
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl font-display text-lg text-ocean/70 sm:text-xl">
-          <span className="block italic" style={{ color: "#0BBFBF" }}>
+        <p
+          style={{ paddingBottom: "4px" }}
+          className="mx-auto mt-6 max-w-2xl font-display text-lg leading-normal text-ocean/70 sm:text-xl"
+        >
+          <span
+            className="block italic"
+            style={{ color: "#0BBFBF", paddingBottom: "4px" }}
+          >
             Where creativity becomes reality.
           </span>
           The platform where creative teams, business teams, and innovators
@@ -117,7 +129,10 @@ export default function Landing() {
 
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16">
-        <h2 className="text-center font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+        <h2
+          style={{ paddingBottom: "4px" }}
+          className="text-center font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
+        >
           Everything you need to co-create
         </h2>
         <ul className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -126,10 +141,13 @@ export default function Landing() {
               <div className="text-3xl" aria-hidden>
                 {f.emoji}
               </div>
-              <h3 className="mt-3 font-display text-lg font-bold text-ocean">
+              <h3
+                style={{ paddingBottom: "4px" }}
+                className="mt-3 font-display text-lg font-bold leading-normal text-ocean"
+              >
                 {f.title}
               </h3>
-              <p className="mt-2 text-sm text-ocean/70">{f.body}</p>
+              <p className="mt-2 text-sm leading-normal text-ocean/70">{f.body}</p>
             </li>
           ))}
         </ul>
@@ -137,7 +155,10 @@ export default function Landing() {
 
       {/* Project types */}
       <section className="mx-auto max-w-4xl px-6 py-12 text-center">
-        <p className="font-display text-lg text-ocean/70 sm:text-xl">
+        <p
+          style={{ paddingBottom: "4px" }}
+          className="font-display text-lg leading-normal text-ocean/70 sm:text-xl"
+        >
           Join creators writing songs, screenplays, novels, business plans and
           more
         </p>
@@ -156,10 +177,13 @@ export default function Landing() {
           <div className="inline-block rounded-full bg-lagoon/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-lagoon">
             Think Tank — Where Ideas Meet Expertise
           </div>
-          <h2 className="mt-4 font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+          <h2
+            style={{ paddingBottom: "4px" }}
+            className="mt-4 font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
+          >
             Got a big idea? Get expert input.
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-ocean/70 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-normal text-ocean/70 sm:text-lg">
             Invite verified founders, investors, and industry veterans to
             contribute directly into your Think Tank project. They add their
             expertise. You keep moving forward.
@@ -168,7 +192,10 @@ export default function Landing() {
 
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-ocean">
+            <h3
+              style={{ paddingBottom: "4px" }}
+              className="font-display text-lg font-bold leading-normal text-ocean"
+            >
               For teams with ideas
             </h3>
             <ul className="mt-3 space-y-2 text-sm text-ocean/80">
@@ -191,7 +218,10 @@ export default function Landing() {
             </ul>
           </div>
           <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-ocean">
+            <h3
+              style={{ paddingBottom: "4px" }}
+              className="font-display text-lg font-bold leading-normal text-ocean"
+            >
               For experts
             </h3>
             <ul className="mt-3 space-y-2 text-sm text-ocean/80">
@@ -239,10 +269,13 @@ export default function Landing() {
           <div className="inline-block rounded-full bg-ocean/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-ocean/70">
             For business teams
           </div>
-          <h2 className="mt-4 font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+          <h2
+            style={{ paddingBottom: "4px" }}
+            className="mt-4 font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
+          >
             Built for teams who create together
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-ocean/70 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-normal text-ocean/70 sm:text-lg">
             From marketing campaigns to legal documents to strategic plans —
             Collab It gives every contributor a clear role, a clear turn,
             and clear attribution.
@@ -271,10 +304,13 @@ export default function Landing() {
               <div className="text-3xl" aria-hidden>
                 {c.emoji}
               </div>
-              <h3 className="mt-3 font-display text-lg font-bold text-ocean">
+              <h3
+                style={{ paddingBottom: "4px" }}
+                className="mt-3 font-display text-lg font-bold leading-normal text-ocean"
+              >
                 {c.title}
               </h3>
-              <p className="mt-2 text-sm text-ocean/70">{c.body}</p>
+              <p className="mt-2 text-sm leading-normal text-ocean/70">{c.body}</p>
             </li>
           ))}
         </ul>
@@ -305,27 +341,30 @@ export default function Landing() {
           <div className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-lagoon">
             Our Mission
           </div>
-          <h2 className="mt-5 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">
+          <h2
+            style={{ paddingBottom: "4px" }}
+            className="mt-5 font-display text-4xl font-extrabold leading-normal tracking-tight text-white sm:text-5xl"
+          >
             Built with purpose. Guided by something greater.
           </h2>
           <div className="mx-auto mt-8 max-w-2xl space-y-5 font-display text-base leading-relaxed text-white/80 sm:text-lg">
-            <p>
+            <p style={{ paddingBottom: "4px" }}>
               Every feature built, every problem solved, every collaboration
               that comes to life here — we believe none of it happens without
               purpose and guidance.
             </p>
-            <p>
+            <p style={{ paddingBottom: "4px" }}>
               Collab It exists to bring people together — to create things
               that matter, tell stories that heal, build ideas that help, and
               connect people across distances and differences.
             </p>
-            <p>
+            <p style={{ paddingBottom: "4px" }}>
               For the songwriter who finds their co-writer. For the
               entrepreneur whose idea finds its expert. For the creator who
               gets discovered. For every collaborator who builds something
               they could not have created alone.
             </p>
-            <p>Collab It is the bridge.</p>
+            <p style={{ paddingBottom: "4px" }}>Collab It is the bridge.</p>
           </div>
           <div
             aria-hidden
@@ -333,8 +372,8 @@ export default function Landing() {
             style={{ backgroundColor: "#0BBFBF" }}
           />
           <p
-            style={{ color: "#0BBFBF" }}
-            className="mt-8 font-display text-2xl italic sm:text-3xl"
+            style={{ color: "#0BBFBF", paddingBottom: "4px" }}
+            className="mt-8 font-display text-2xl italic leading-normal sm:text-3xl"
           >
             All glory to God. Now go build something legendary.
           </p>
@@ -344,10 +383,13 @@ export default function Landing() {
       {/* Industry CTA */}
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-12">
-          <h2 className="font-display text-3xl font-extrabold text-ocean sm:text-4xl">
+          <h2
+            style={{ paddingBottom: "4px" }}
+            className="font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
+          >
             Industry professionals — get early access
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-ocean/70 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-xl text-base leading-normal text-ocean/70 sm:text-lg">
             Our Scout portal opens Summer 2026. Join 500+ agents, publishers, and labels already on the waitlist for first access to emerging talent.
           </p>
           <Link
@@ -362,7 +404,10 @@ export default function Landing() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-4xl px-6 py-20 text-center">
-        <h2 className="font-display text-4xl font-extrabold text-ocean sm:text-5xl">
+        <h2
+          style={{ paddingBottom: "4px" }}
+          className="font-display text-4xl font-extrabold leading-normal text-ocean sm:text-5xl"
+        >
           Ready to create something legendary?
         </h2>
         <div className="mt-8">
@@ -381,7 +426,10 @@ export default function Landing() {
       <footer className="border-t border-ocean/10 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8">
           <Link href="/" aria-label="Collab It home">
-            <span className="font-display text-xl font-extrabold tracking-tight">
+            <span
+              style={{ paddingBottom: "4px" }}
+              className="inline-block font-display text-xl font-extrabold leading-normal tracking-tight"
+            >
               <span className="text-ocean">collab</span>
               <span className="text-lagoon">it</span>
             </span>
