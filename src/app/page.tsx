@@ -87,10 +87,13 @@ export default function Landing() {
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 text-center sm:pt-28">
         <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-ocean sm:text-6xl md:text-7xl">
-          Write it together. <span className="text-lagoon">Get discovered.</span>{" "}
+          Create it together. <span className="text-lagoon">Get discovered.</span>{" "}
           Get paid.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl font-display text-lg text-ocean/70 sm:text-xl">
+          <span className="block italic" style={{ color: "#0BBFBF" }}>
+            Where creativity becomes reality.
+          </span>
           The platform where creative teams, business teams, and innovators
           create together — with every contribution attributed, every turn
           accountable, and every completed project ready for the world.
