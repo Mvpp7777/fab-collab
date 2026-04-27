@@ -24,10 +24,10 @@ export default async function EditProfilePage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" aria-label="Fab Collab home">
+          <Link href="/dashboard" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link href="/dashboard" className="text-sm font-medium text-ocean/70 hover:text-ocean">
@@ -43,7 +43,7 @@ export default async function EditProfilePage() {
         <p className="mt-2 text-sm text-ocean/70">
           Your public profile lives at{" "}
           <span className="font-mono text-lagoon">
-            fabcollab.vercel.app/profile/{profile?.username ?? "your-username"}
+            collabit.vercel.app/profile/{profile?.username ?? "your-username"}
           </span>
         </p>
         <EditProfileForm

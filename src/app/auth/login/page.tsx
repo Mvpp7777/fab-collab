@@ -52,8 +52,8 @@ function LoginForm() {
       <div className="w-full max-w-md">
         <Link href="/" className="block text-center">
           <h1 className="font-display text-5xl font-extrabold leading-none tracking-tight">
-            <span className="text-ocean">fab</span>
-            <span className="text-lagoon">collab</span>
+            <span className="text-ocean">collab</span>
+            <span className="text-lagoon">it</span>
           </h1>
         </Link>
 
@@ -110,7 +110,7 @@ function LoginForm() {
           </form>
 
           <p className="mt-6 text-center text-sm text-ocean/70">
-            New to Fab Collab?{" "}
+            New to Collab It?{" "}
             <Link
               href={`/auth/signup${nextPath !== "/dashboard" ? `?next=${encodeURIComponent(nextPath)}` : ""}`}
               className="font-semibold text-lagoon hover:underline"

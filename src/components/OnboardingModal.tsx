@@ -44,7 +44,7 @@ export default function OnboardingModal({ userId }: { userId: string }) {
         </button>
 
         <h2 className="font-display text-2xl font-extrabold text-ocean sm:text-3xl">
-          Welcome to Fab Collab! 👋
+          Welcome to Collab It! 👋
         </h2>
         <p className="mt-2 text-sm text-ocean/70">
           Here&rsquo;s how to get started in 3 steps

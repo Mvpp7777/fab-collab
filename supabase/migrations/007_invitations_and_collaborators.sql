@@ -1,4 +1,4 @@
--- Fab Collab - invitations + collaborators RLS, owner backfill.
+-- Collab It - invitations + collaborators RLS, owner backfill.
 
 -- =============================================================================
 -- collaborators policies

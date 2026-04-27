@@ -19,21 +19,21 @@ export async function generateMetadata({
     .select("display_name, bio")
     .eq("username", params.username)
     .maybeSingle();
-  if (!profile) return { title: "Portfolio · Fab Collab" };
+  if (!profile) return { title: "Portfolio · Collab It" };
   const name = profile.display_name?.trim() || params.username;
   const description =
-    profile.bio ?? `${name}'s completed projects on Fab Collab`;
+    profile.bio ?? `${name}'s completed projects on Collab It`;
   return {
-    title: `${name}'s portfolio · Fab Collab`,
+    title: `${name}'s portfolio · Collab It`,
     description,
     openGraph: {
-      title: `${name}'s portfolio · Fab Collab`,
+      title: `${name}'s portfolio · Collab It`,
       description,
       type: "profile",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${name}'s portfolio · Fab Collab`,
+      title: `${name}'s portfolio · Collab It`,
       description,
     },
   };
@@ -131,10 +131,10 @@ export default async function PortfolioPage({
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link
@@ -163,7 +163,7 @@ export default async function PortfolioPage({
             </p>
           )}
           <div className="mt-4 text-sm text-ocean/50">
-            fabcollab.vercel.app/portfolio/{profile.username}
+            collabit.vercel.app/portfolio/{profile.username}
           </div>
         </section>
 
@@ -240,7 +240,7 @@ export default async function PortfolioPage({
 
         <footer className="mt-16 rounded-2xl border border-ocean/10 bg-white p-6 text-center">
           <p className="font-display text-lg font-semibold text-ocean">
-            Create your own portfolio on Fab Collab →
+            Create your own portfolio on Collab It →
           </p>
           <Link
             href="/auth/signup"

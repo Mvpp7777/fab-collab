@@ -65,7 +65,7 @@ export default function TipBox({ token }: { token: string }) {
         Love what you&rsquo;re reading? Support the creators
       </h2>
       <p className="mt-1 text-sm text-ocean/70">
-        100% goes to the team behind this project (minus a 10% Fab Collab fee).
+        100% goes to the team behind this project (minus a 10% Collab It fee).
       </p>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">

@@ -9,9 +9,9 @@ import InterestButton from "./InterestButton";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Invest — Fab Collab",
+  title: "Invest — Collab It",
   description:
-    "Discover Think Tank projects seeking funding from the Fab Collab community.",
+    "Discover Think Tank projects seeking funding from the Collab It community.",
 };
 
 const THINK_TANK_TYPES = [
@@ -105,10 +105,10 @@ export default async function InvestPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
@@ -132,7 +132,7 @@ export default async function InvestPage() {
             Discover investment opportunities
           </h1>
           <p className="mt-3 font-display text-lg text-ocean/70 sm:text-xl">
-            Think Tank projects seeking funding from the Fab Collab community.
+            Think Tank projects seeking funding from the Collab It community.
           </p>
         </section>
 

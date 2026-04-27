@@ -20,7 +20,7 @@ function publicOrigin(): string {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   if (host) return `${proto}://${host}`;
-  return "https://fabcollab.vercel.app";
+  return "https://collabit.vercel.app";
 }
 
 export async function generateMetadata({
@@ -34,7 +34,7 @@ export async function generateMetadata({
     .select("id, title")
     .eq("feedback_token", params.token)
     .maybeSingle();
-  if (!project) return { title: "Feedback · Fab Collab" };
+  if (!project) return { title: "Feedback · Collab It" };
 
   const { data: firstSection } = await admin
     .from("sections")
@@ -56,10 +56,10 @@ export async function generateMetadata({
     firstContent = (snap?.content_text as string | null) ?? "";
   }
 
-  const title = `${project.title} — a collaboration on Fab Collab`;
+  const title = `${project.title} — a collaboration on Collab It`;
   const description =
     buildTeaser(firstContent) ||
-    `Read the collaboration and leave feedback on Fab Collab.`;
+    `Read the collaboration and leave feedback on Collab It.`;
   const url = `${publicOrigin()}/feedback/${params.token}`;
 
   return {
@@ -251,10 +251,10 @@ export default async function FeedbackTokenPage({
       />
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link
@@ -401,7 +401,7 @@ export default async function FeedbackTokenPage({
         <footer className="mt-10 border-t border-ocean/10 pt-6 text-center text-xs text-ocean/50">
           © 2026 {firstNames[0] ?? "the creator"}
           {firstNames.length > 1 ? " and contributors" : ""}. All rights
-          reserved. Created on Fab Collab™
+          reserved. Created on Collab It™
         </footer>
       </main>
     </div>

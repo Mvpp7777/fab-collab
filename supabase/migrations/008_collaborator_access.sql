@@ -1,4 +1,4 @@
--- Fab Collab - collaborator-scoped access (recursion-safe rewrite).
+-- Collab It - collaborator-scoped access (recursion-safe rewrite).
 -- Earlier version had projects <-> collaborators policy recursion; this fixes
 -- it by routing the membership check through a SECURITY DEFINER function so
 -- the subquery bypasses RLS and never re-enters the projects policy.

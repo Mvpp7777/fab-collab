@@ -1,14 +1,14 @@
 # Next session — current status
 
 ## Live
-- **Production URL:** https://fabcollab.vercel.app
+- **Production URL:** https://collabit.vercel.app
 - **GitHub:** https://github.com/Mvpp7777/fab-collab
 - **Latest commit on `master`:** `b8d9b7a` Add corporate teams section to landing page
 
 ## Stripe — connected, test mode
 - `STRIPE_SECRET_KEY` (test) — set in `.env.local` and Vercel production
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (test) — same
-- `STRIPE_WEBHOOK_SECRET` (`whsec_…cYO5w`) — set in `.env.local` and Vercel production. Webhook endpoint `https://fabcollab.vercel.app/api/stripe/webhook` listens for `checkout.session.completed` + `payment_intent.succeeded`.
+- `STRIPE_WEBHOOK_SECRET` (`whsec_…cYO5w`) — set in `.env.local` and Vercel production. Webhook endpoint `https://collabit.vercel.app/api/stripe/webhook` listens for `checkout.session.completed` + `payment_intent.succeeded`.
 - Stripe SDK pinned to API version `2026-04-22.dahlia` in `src/lib/stripe.ts`.
 
 ## Already shipped (now live)
@@ -46,7 +46,7 @@
 - **Tip a Creator** — quick-tip buttons + custom amount on `/feedback/[token]` → Stripe Checkout → `tips` table → all collaborators get an in-app "Someone tipped $X 🎉" notification
 - **Unlock the Full Story** — first section free, rest blurred behind 🔒; Stripe Checkout at `projects.unlock_price_cents` (default $3) → `content_unlocks` row + `unlock_token` persisted in `localStorage` so the same browser stays unlocked on return visits
 - **Buy a Turn** — owner toggles "Open for purchase" + price ($10/$25/$100/$500) on each section card; public CTA "✍️ Co-write this section — $X" on `/feedback/[token]` → Stripe Checkout → buyer added as collaborator (next `turn_order`, `editor` role) when signed in, owner notified either way
-- 10% Fab Collab platform fee tracked as `platform_fee_cents` on every row
+- 10% Collab It platform fee tracked as `platform_fee_cents` on every row
 - Stripe webhook handler at `/api/stripe/webhook` verifies signatures and records the rows + fans out notifications
 
 ### Think Tank investment flow (commit `799ff49`)
@@ -59,7 +59,7 @@
 ### Landing + brand
 - Landing page (hero, features, project types, Think Tank, **For business teams** (commit `b8d9b7a`), Industry CTA, final CTA, footer)
 - Discovery messaging is honest about timeline ("Scout portal opening Summer 2026" everywhere — landing feature card, industry CTA, `/discover` banner, dashboard stat hint, completion modal toggle copy) — commit `870ad6c`
-- Terms of Service + Privacy Policy (with IP/DMCA/anti-scraping, Fab Collab™)
+- Terms of Service + Privacy Policy (with IP/DMCA/anti-scraping, Collab It™)
 - LICENSE file + copyright notices
 - Dark mode toggle in header + CSS variable overrides
 - SEO metadata on public pages + `robots.ts` + `sitemap.ts`

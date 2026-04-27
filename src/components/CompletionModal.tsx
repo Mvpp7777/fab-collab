@@ -135,7 +135,7 @@ export default function CompletionModal({
             ? `${names[0]} and ${names[1]}`
             : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
     const text =
-      `We just finished ${projectTitle} on Fab Collab! ${nameClause} wrote it together. Try it at fabcollab.vercel.app`;
+      `We just finished ${projectTitle} on Collab It! ${nameClause} wrote it together. Try it at collabit.vercel.app`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -384,7 +384,7 @@ function PublicToggle({
             Share on public gallery? (optional)
           </span>
           <span className="mt-1 block text-xs text-ocean/70">
-            Your project will appear on the Fab Collab discover page.
+            Your project will appear on the Collab It discover page.
             Contributors names will be shown. No content is visible without
             your permission.
           </span>

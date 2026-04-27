@@ -1,4 +1,4 @@
--- Fab Collab - "Unlock the Full Story" Stripe-backed paywall.
+-- Collab It - "Unlock the Full Story" Stripe-backed paywall.
 
 alter table public.projects
   add column if not exists unlock_price_cents integer not null default 300

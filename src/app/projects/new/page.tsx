@@ -32,7 +32,7 @@ export default function NewProjectPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" aria-label="Fab Collab home">
+          <Link href="/dashboard" aria-label="Collab It home">
             <span
               className="font-display text-2xl font-extrabold tracking-tight"
               style={{ fontFamily: "var(--font-syne), sans-serif" }}

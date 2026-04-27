@@ -1,4 +1,4 @@
--- Fab Collab - Think Tank investor interest signals.
+-- Collab It - Think Tank investor interest signals.
 
 create table if not exists public.investment_interests (
   id                  uuid primary key default gen_random_uuid(),

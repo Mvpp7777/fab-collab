@@ -7,7 +7,7 @@ import { licenseMeta } from "@/lib/licenses";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Discover — Fab Collab",
+  title: "Discover — Collab It",
   description:
     "Browse completed collaborative projects from songwriters, screenwriters, novelists and more.",
 };
@@ -143,10 +143,10 @@ export default async function DiscoverIndex({
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <div className="flex items-center gap-4">
@@ -183,7 +183,7 @@ export default async function DiscoverIndex({
             Discover
           </h1>
           <p className="mt-3 font-display text-lg text-ocean/70 sm:text-xl">
-            Completed projects shared by the Fab Collab community.
+            Completed projects shared by the Collab It community.
           </p>
         </section>
 

@@ -1,4 +1,4 @@
--- Fab Collab - public user profiles (username, bio) + realtime publications.
+-- Collab It - public user profiles (username, bio) + realtime publications.
 
 alter table public.users add column if not exists username text unique;
 alter table public.users add column if not exists bio text;

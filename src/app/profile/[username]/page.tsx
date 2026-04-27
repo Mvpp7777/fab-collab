@@ -21,14 +21,14 @@ export async function generateMetadata({
     .select("display_name, bio")
     .eq("username", params.username)
     .maybeSingle();
-  if (!profile) return { title: "Profile · Fab Collab" };
+  if (!profile) return { title: "Profile · Collab It" };
   const name = profile.display_name?.trim() || params.username;
   return {
-    title: `${name} · Fab Collab`,
-    description: profile.bio ?? `${name}'s projects on Fab Collab`,
+    title: `${name} · Collab It`,
+    description: profile.bio ?? `${name}'s projects on Collab It`,
     openGraph: {
-      title: `${name} · Fab Collab`,
-      description: profile.bio ?? `${name}'s projects on Fab Collab`,
+      title: `${name} · Collab It`,
+      description: profile.bio ?? `${name}'s projects on Collab It`,
       type: "profile",
     },
   };
@@ -150,19 +150,19 @@ export default async function ProfilePage({
   );
 
   const inviteMailto = `mailto:?subject=${encodeURIComponent(
-    `Collaborate with me on Fab Collab`,
+    `Collaborate with me on Collab It`,
   )}&body=${encodeURIComponent(
-    `Hey ${displayName},\n\nI'd love to collaborate with you on Fab Collab. Here's my profile: https://fabcollab.vercel.app/profile/${profile.username}\n\n— Sent via Fab Collab`,
+    `Hey ${displayName},\n\nI'd love to collaborate with you on Collab It. Here's my profile: https://collabit.vercel.app/profile/${profile.username}\n\n— Sent via Collab It`,
   )}`;
 
   return (
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link

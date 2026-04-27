@@ -1,4 +1,4 @@
--- Fab Collab - project analytics helpers.
+-- Collab It - project analytics helpers.
 
 create table if not exists public.feedback_page_views (
   id          uuid primary key default gen_random_uuid(),

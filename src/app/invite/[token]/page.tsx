@@ -52,8 +52,8 @@ export default async function InvitePage({
       <div className="w-full max-w-md">
         <Link href="/" className="block text-center">
           <span className="font-display text-4xl font-extrabold tracking-tight">
-            <span className="text-ocean">fab</span>
-            <span className="text-lagoon">collab</span>
+            <span className="text-ocean">collab</span>
+            <span className="text-lagoon">it</span>
           </span>
         </Link>
 

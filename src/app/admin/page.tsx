@@ -146,8 +146,8 @@ export default async function AdminPage() {
               href="/"
               className="font-display text-xl font-extrabold tracking-tight"
             >
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
               <span className="ml-2 rounded-full bg-ocean px-2 py-0.5 text-xs font-semibold uppercase text-white">
                 Admin
               </span>

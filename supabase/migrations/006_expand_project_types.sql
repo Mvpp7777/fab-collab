@@ -1,4 +1,4 @@
--- Fab Collab - expand project_type enum
+-- Collab It - expand project_type enum
 -- Adds professional/work project categories alongside the existing creative ones.
 -- ALTER TYPE ... ADD VALUE is idempotent with IF NOT EXISTS.
 

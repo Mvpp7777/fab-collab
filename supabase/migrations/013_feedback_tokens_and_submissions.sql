@@ -1,4 +1,4 @@
--- Fab Collab - public feedback link (token) + submissions table.
+-- Collab It - public feedback link (token) + submissions table.
 
 -- Add a per-project feedback token (null until the owner generates one).
 alter table public.projects

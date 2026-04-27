@@ -1,4 +1,4 @@
--- Fab Collab - project templates (private, community, official).
+-- Collab It - project templates (private, community, official).
 
 create table if not exists public.templates (
   id              uuid primary key default gen_random_uuid(),

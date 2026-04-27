@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://fabcollab.vercel.app";
+  "https://collabit.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

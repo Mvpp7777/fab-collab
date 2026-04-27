@@ -1,4 +1,4 @@
--- Fab Collab - influencer campaigns (no Stripe yet).
+-- Collab It - influencer campaigns (no Stripe yet).
 -- Campaigns wrap a project with scarcity (max collaborators), a reward, and
 -- a public landing page + waitlist once full.
 

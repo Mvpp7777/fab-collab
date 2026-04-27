@@ -63,8 +63,8 @@ function SignupForm() {
       <div className="w-full max-w-md">
         <Link href="/" className="block text-center">
           <h1 className="font-display text-5xl font-extrabold leading-none tracking-tight">
-            <span className="text-ocean">fab</span>
-            <span className="text-lagoon">collab</span>
+            <span className="text-ocean">collab</span>
+            <span className="text-lagoon">it</span>
           </h1>
         </Link>
 

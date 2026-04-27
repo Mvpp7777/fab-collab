@@ -48,7 +48,7 @@ export async function POST(req: Request) {
             currency: "usd",
             product_data: {
               name: `Unlock the full story: ${project.title}`,
-              description: "One-time unlock of the full collaboration on Fab Collab.",
+              description: "One-time unlock of the full collaboration on Collab It.",
             },
             unit_amount: priceCents,
           },

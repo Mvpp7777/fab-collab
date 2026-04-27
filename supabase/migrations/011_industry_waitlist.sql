@@ -1,4 +1,4 @@
--- Fab Collab - industry waitlist (Scout tier signup).
+-- Collab It - industry waitlist (Scout tier signup).
 -- Anyone can submit (anonymous public form). Only service-role can read.
 
 create table if not exists public.industry_waitlist (

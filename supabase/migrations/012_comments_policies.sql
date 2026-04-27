@@ -1,4 +1,4 @@
--- Fab Collab - comments RLS policies.
+-- Collab It - comments RLS policies.
 -- Leverages public.is_project_member() from migration 008 to stay recursion-safe.
 
 drop policy if exists "Collaborator can select comments" on public.comments;

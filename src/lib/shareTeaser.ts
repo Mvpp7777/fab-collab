@@ -48,7 +48,7 @@ export function buildSharePost(p: SharePostParams): string {
       quoted,
       `Want to hear more? Leave feedback 👇`,
       p.feedbackUrl,
-      `#songwriting #fabcollab`,
+      `#songwriting #collabit`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -60,7 +60,7 @@ export function buildSharePost(p: SharePostParams): string {
       quoted,
       `Tell me what you think 👇`,
       p.feedbackUrl,
-      `#screenplay #writing #fabcollab`,
+      `#screenplay #writing #collabit`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -79,11 +79,11 @@ export function buildSharePost(p: SharePostParams): string {
   }
 
   return [
-    `✍️ Creating something with ${names} on Fab Collab.`,
+    `✍️ Creating something with ${names} on Collab It.`,
     teaser ? `Here's a peek:` : "",
     quoted,
     p.feedbackUrl,
-    `#fabcollab`,
+    `#collabit`,
   ]
     .filter(Boolean)
     .join("\n");

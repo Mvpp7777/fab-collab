@@ -23,15 +23,15 @@ export async function generateMetadata({
     .select("title, description, spots_filled, max_collaborators")
     .eq("slug", params.slug)
     .maybeSingle();
-  if (!c) return { title: "Campaign · Fab Collab" };
+  if (!c) return { title: "Campaign · Collab It" };
   const remaining = Math.max(0, c.max_collaborators - c.spots_filled);
   return {
-    title: `${c.title} · Fab Collab`,
+    title: `${c.title} · Collab It`,
     description:
       c.description ??
-      `${remaining} spots left in this collaboration on Fab Collab.`,
+      `${remaining} spots left in this collaboration on Collab It.`,
     openGraph: {
-      title: `${c.title} · Fab Collab`,
+      title: `${c.title} · Collab It`,
       description:
         c.description ??
         `${remaining} spots left — join before it's full.`,
@@ -47,7 +47,7 @@ function computeOrigin(): string {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   if (host) return `${proto}://${host}`;
-  return "https://fabcollab.vercel.app";
+  return "https://collabit.vercel.app";
 }
 
 export default async function CampaignLanding({
@@ -133,7 +133,7 @@ export default async function CampaignLanding({
 
   const origin = computeOrigin();
   const shareUrl = `${origin}/campaign/${campaign.slug}`;
-  const shareText = `I just got one of the last ${remaining} spots in ${ownerName}'s collab on Fab Collab! Only ${remaining} left: ${shareUrl} 🎵`;
+  const shareText = `I just got one of the last ${remaining} spots in ${ownerName}'s collab on Collab It! Only ${remaining} left: ${shareUrl} 🎵`;
 
   const ownerColor = colorForTurnOrder(1);
 
@@ -141,10 +141,10 @@ export default async function CampaignLanding({
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link

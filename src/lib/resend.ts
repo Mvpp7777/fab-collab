@@ -28,7 +28,7 @@ export async function sendInviteEmail(params: {
     const { error } = await resend.emails.send({
       from: FROM,
       to: params.to,
-      subject: `${params.inviterName} invited you to ${params.projectTitle} on Fab Collab`,
+      subject: `${params.inviterName} invited you to ${params.projectTitle} on Collab It`,
       html: inviteHtml(params),
       text: inviteText(params),
     });
@@ -57,7 +57,7 @@ function inviteHtml(p: {
   return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
     <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
       <div style="font-weight:800;font-size:28px;letter-spacing:-0.5px;margin-bottom:24px">
-        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+        <span style="color:#1A2E2E">collab</span><span style="color:#0BBFBF">it</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px">You&rsquo;re invited</h1>
       <p style="margin:0 0 24px;color:#1A2E2E99">${escapeHtml(p.inviterName)} invited you to collaborate on <strong>${escapeHtml(p.projectTitle)}</strong>.</p>
@@ -73,7 +73,7 @@ function inviteText(p: {
   inviterName: string;
   inviteUrl: string;
 }): string {
-  return `${p.inviterName} invited you to collaborate on "${p.projectTitle}" on Fab Collab.
+  return `${p.inviterName} invited you to collaborate on "${p.projectTitle}" on Collab It.
 
 Accept here: ${p.inviteUrl}
 
@@ -138,7 +138,7 @@ function turnHtml(p: {
   return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
     <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
       <div style="font-weight:800;font-size:28px;letter-spacing:-0.5px;margin-bottom:24px">
-        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+        <span style="color:#1A2E2E">collab</span><span style="color:#0BBFBF">it</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px;color:#1A2E2E">It&rsquo;s your turn 🎵</h1>
       <p style="margin:0 0 24px;color:#1A2E2E99">${escapeHtml(p.passerName)} just passed the turn to you on <strong style="color:#0BBFBF">${escapeHtml(p.projectTitle)}</strong>. Click below to keep the momentum going.</p>
@@ -183,13 +183,13 @@ export async function sendInvestorInterestEmail(params: {
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
       <div style="font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:24px">
-        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+        <span style="color:#1A2E2E">collab</span><span style="color:#0BBFBF">it</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px">Hi ${escapeHtml(params.investorName)} 👋</h1>
       <p style="margin:0 0 18px;color:#1A2E2E99">Thanks for expressing interest in <strong>${escapeHtml(params.projectTitle)}</strong>. The team has been notified and will reach out directly.</p>
       <p style="margin:0 0 6px;color:#1A2E2E"><strong>Team owner:</strong> ${ownerLine}</p>
       ${params.message ? `<p style="margin:18px 0 0;padding:12px 16px;border-left:3px solid #0BBFBF;color:#1A2E2E99;font-style:italic">Your message: ${escapeHtml(params.message)}</p>` : ""}
-      <p style="margin:24px 0 0;font-size:12px;color:#1A2E2E80">— Fab Collab Think Tank</p>
+      <p style="margin:24px 0 0;font-size:12px;color:#1A2E2E80">— Collab It Think Tank</p>
     </div>
   </body></html>`;
   const text = [
@@ -200,7 +200,7 @@ export async function sendInvestorInterestEmail(params: {
     `Team owner: ${params.ownerName}${params.ownerEmail ? ` (${params.ownerEmail})` : ""}`,
     params.message ? `\nYour message:\n${params.message}` : "",
     ``,
-    `— Fab Collab Think Tank`,
+    `— Collab It Think Tank`,
   ].join("\n");
   try {
     const { error } = await resend.emails.send({
@@ -286,7 +286,7 @@ export async function sendDigestEmail(params: {
     const { error } = await resend.emails.send({
       from: FROM,
       to: params.to,
-      subject: "Your Fab Collab projects are waiting for you 🎵",
+      subject: "Your Collab It projects are waiting for you 🎵",
       html: digestHtml(params),
       text: digestText(params),
     });
@@ -312,7 +312,7 @@ function digestHtml(p: {
   return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#E8F8F8;padding:32px;color:#1A2E2E">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px">
       <div style="font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:24px">
-        <span style="color:#1A2E2E">fab</span><span style="color:#0BBFBF">collab</span>
+        <span style="color:#1A2E2E">collab</span><span style="color:#0BBFBF">it</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px">Hi ${escapeHtml(p.userName)} 👋</h1>
       <p style="margin:0 0 18px;color:#1A2E2E99">It's your turn on ${p.pendingTurns.length} project${p.pendingTurns.length === 1 ? "" : "s"}:</p>
@@ -338,7 +338,7 @@ It's your turn on ${p.pendingTurns.length} project${p.pendingTurns.length === 1 
 ${list}
 
 ${p.streakWeeks > 0 ? `🔥 ${p.streakWeeks} week streak — keep it going!\n` : ""}${p.unreadNotifications > 0 ? `${p.unreadNotifications} unread notifications waiting.\n` : ""}
-— Fab Collab`;
+— Collab It`;
 }
 
 function escapeHtml(s: string): string {

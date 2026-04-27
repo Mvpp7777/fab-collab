@@ -1,4 +1,4 @@
-// Client-side Fab Collab authorship certificate generator.
+// Client-side Collab It authorship certificate generator.
 // Uses jspdf (already installed). Dynamic import keeps the lib out of the
 // initial bundle.
 
@@ -70,7 +70,7 @@ export async function generateCertificatePdf(params: {
   const certLine = "This certifies that the contributors below";
   doc.text(certLine, (pageW - doc.getTextWidth(certLine)) / 2, y);
   y += 18;
-  const certLine2 = "co-created the following work on Fab Collab:";
+  const certLine2 = "co-created the following work on Collab It:";
   doc.text(certLine2, (pageW - doc.getTextWidth(certLine2)) / 2, y);
 
   // Project title
@@ -163,7 +163,7 @@ export async function generateCertificatePdf(params: {
 
   y += 14;
   doc.setTextColor(120, 120, 120);
-  const footer = "Issued by Fab Collab · fabcollab.vercel.app";
+  const footer = "Issued by Collab It · collabit.vercel.app";
   doc.text(footer, (pageW - doc.getTextWidth(footer)) / 2, y);
 
   return doc.output("blob");

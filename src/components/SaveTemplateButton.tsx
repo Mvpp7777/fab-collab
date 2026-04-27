@@ -19,7 +19,7 @@ export default function SaveTemplateButton({
       window.prompt("Template title:", `${projectTitle} template`) ?? "";
     if (!title.trim()) return;
     const makePublic = window.confirm(
-      "Share this template with the Fab Collab community?",
+      "Share this template with the Collab It community?",
     );
     setBusy(true);
     const r = await saveProjectAsTemplate({

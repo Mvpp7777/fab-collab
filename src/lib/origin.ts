@@ -8,5 +8,5 @@ export function getPublicOrigin(): string {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   if (host) return `${proto}://${host}`;
-  return "https://fabcollab.vercel.app";
+  return "https://collabit.vercel.app";
 }

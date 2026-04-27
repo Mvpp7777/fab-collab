@@ -42,8 +42,8 @@ export async function approveExpert(params: {
       await resend.emails.send({
         from: FROM,
         to: app.email,
-        subject: "You're approved on Fab Collab Think Tank 🎉",
-        text: `Hi ${app.name ?? "there"},\n\nYou've been approved as a Fab Collab expert. We'll email you when the Think Tank marketplace opens to creators — expect updates over the next few weeks.\n\n— The Fab Collab team`,
+        subject: "You're approved on Collab It Think Tank 🎉",
+        text: `Hi ${app.name ?? "there"},\n\nYou've been approved as a Collab It expert. We'll email you when the Think Tank marketplace opens to creators — expect updates over the next few weeks.\n\n— The Collab It team`,
       });
     } catch {
       /* best effort */
@@ -76,8 +76,8 @@ export async function rejectExpert(params: {
       await resend.emails.send({
         from: FROM,
         to: app.email,
-        subject: "Thanks for applying to Fab Collab Think Tank",
-        text: `Hi ${app.name ?? "there"},\n\nThanks for applying to join the Fab Collab Think Tank as an expert. We're not able to move forward with your application at this time, but the marketplace is young and criteria will evolve — we'd love to revisit as it grows.\n\n— The Fab Collab team`,
+        subject: "Thanks for applying to Collab It Think Tank",
+        text: `Hi ${app.name ?? "there"},\n\nThanks for applying to join the Collab It Think Tank as an expert. We're not able to move forward with your application at this time, but the marketplace is young and criteria will evolve — we'd love to revisit as it grows.\n\n— The Collab It team`,
       });
     } catch {
       /* best effort */

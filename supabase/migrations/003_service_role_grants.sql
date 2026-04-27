@@ -1,4 +1,4 @@
--- Fab Collab - service_role grants
+-- Collab It - service_role grants
 -- Ensures the service_role (used by the admin client) has full privileges on
 -- all tables in the public schema. Supabase normally does this via default
 -- privileges, but tables created through raw-SQL migrations sometimes miss it.

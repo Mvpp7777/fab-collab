@@ -1,4 +1,4 @@
--- Fab Collab - tips table for "Tip a Creator" Stripe-backed feature.
+-- Collab It - tips table for "Tip a Creator" Stripe-backed feature.
 
 create table if not exists public.tips (
   id                        uuid primary key default gen_random_uuid(),

@@ -1,11 +1,11 @@
-# Fab Collab — Revenue Strategy & Billion Dollar Roadmap
+# Collab It — Revenue Strategy & Billion Dollar Roadmap
 
 ## The Vision
 "Write it together. Get discovered. Get paid."
-Fab Collab is a three-sided marketplace:
+Collab It is a three-sided marketplace:
 - Creators — collaborate and create
 - Industry professionals — discover and sign talent  
-- Fab Collab — takes a percentage when creators succeed
+- Collab It — takes a percentage when creators succeed
 
 ## Revenue Tiers
 
@@ -25,11 +25,11 @@ browse completed public projects:
   branded discovery page
 
 ### Tier 3 — Success Fees (royalty model)
-When a project created on Fab Collab gets signed, licensed, 
-or commercially released, Fab Collab takes 3-5%.
-- Song licensed for $50,000 → Fab Collab earns $2,500
-- Screenplay sold for $200,000 → Fab Collab earns $10,000
-- Novel advance $500,000 → Fab Collab earns $25,000
+When a project created on Collab It gets signed, licensed, 
+or commercially released, Collab It takes 3-5%.
+- Song licensed for $50,000 → Collab It earns $2,500
+- Screenplay sold for $200,000 → Collab It earns $10,000
+- Novel advance $500,000 → Collab It earns $25,000
 
 ### Tier 4 — Distribution Partnerships
 Direct integrations to push completed work to industry platforms:
@@ -38,7 +38,7 @@ Direct integrations to push completed work to industry platforms:
 - Novels → Kindle Direct Publishing, Ingram Spark
 - Podcasts → Buzzsprout, Spotify for Podcasters
 - Business proposals → DocuSign integration
-Fab Collab takes referral fees and revenue share from partners.
+Collab It takes referral fees and revenue share from partners.
 
 ### Tier 5 — Authorship Certificates
 Blockchain-stamped proof of authorship for IP protection:
@@ -50,12 +50,12 @@ Blockchain-stamped proof of authorship for IP protection:
 
 ### Co-writing Sessions Marketplace
 Professionals list as available co-writing partners.
-Creators book sessions. Fab Collab takes 20% of session fee.
-Example: $200/hour session → $40 to Fab Collab.
+Creators book sessions. Collab It takes 20% of session fee.
+Example: $200/hour session → $40 to Collab It.
 
 ### Brand Collaboration Portal
 Brands post creative briefs. Creators compete to write them.
-Brands pay posting fee plus prize. Fab Collab takes platform fee.
+Brands pay posting fee plus prize. Collab It takes platform fee.
 
 ### Education Licenses
 Music schools, film schools, universities pay site licenses.
@@ -71,7 +71,7 @@ $0.50 per use. High margin, zero incremental cost after training.
 
 ## The Symbiotic Growth Loop
 Creator writes → Project completes → Opts into gallery → 
-Agent discovers → Deal made → Fab Collab takes success fee → 
+Agent discovers → Deal made → Collab It takes success fee → 
 Creator tells others → More creators join → Gallery richer → 
 More agents pay → More deals → More success fees → Repeat
 
@@ -98,7 +98,7 @@ More agents pay → More deals → More success fees → Repeat
 - "Support this project ☕" button on feedback page
 - Any amount: $1, $3, $5, $10, or custom
 - Split equally between all collaborators
-- Fab Collab takes 10%
+- Collab It takes 10%
 - Zero legal complexity — pure appreciation economy
 - Same model as Buy Me a Coffee built into sharing flow
 
@@ -106,8 +106,8 @@ More agents pay → More deals → More success fees → Repeat
 - Feedback page shows first section free
 - Full content unlocks for $1-5 (creator sets price)
 - Same model as Substack/Medium paywall
-- Fab Collab takes 10%
-- 200 readers paying $3 = $540 for creator, $60 for Fab Collab
+- Collab It takes 10%
+- 200 readers paying $3 = $540 for creator, $60 for Collab It
 
 ### Model C — Buy a Turn
 - Creator opens specific sections for purchase
@@ -119,7 +119,7 @@ More agents pay → More deals → More success fees → Repeat
 - After payment, fan is added as collaborator for that section
 - Permanently credited as co-author
 - Authorship certificate documents it
-- Fab Collab takes 10%
+- Collab It takes 10%
 - Zero legal complexity — purchase of creative experience
 
 ### Model D — Reserve My Spot Fee
@@ -128,7 +128,7 @@ More agents pay → More deals → More success fees → Repeat
 - $5 credited toward any future purchase
 - Most committed fans get guaranteed access
 - Gives influencer signal of real demand before launch
-- Fab Collab takes 10%
+- Collab It takes 10%
 
 ### Model E — Sponsor a Section
 - Brands pay flat fee to sponsor a specific section
@@ -136,8 +136,8 @@ More agents pay → More deals → More success fees → Repeat
 - Sponsor name appears on feedback page: 
   "This section sponsored by [Brand]"
 - Mentioned in social share posts
-- Manual approval by Fab Collab team
-- Fab Collab takes 20%
+- Manual approval by Collab It team
+- Collab It takes 20%
 
 ### Stripe Setup Required First
 Before any payment feature can be built:
@@ -162,8 +162,8 @@ directly into the document. Experts can also express
 investment interest creating a mini Shark Tank experience.
 
 ### Revenue Model
-- Expert contribution fees: Fab Collab takes 20%
-  Example: Expert charges $500, Fab Collab earns $100
+- Expert contribution fees: Collab It takes 20%
+  Example: Expert charges $500, Collab It earns $100
   100 Think Tanks/month x 1 expert = $10,000/month
 - Investor access subscription: $500/month per investor
   50 investors = $25,000/month recurring
@@ -179,8 +179,8 @@ Healthcare, Policy & Government, International Expansion
 
 ### Expert Verification
 - Self-reported with LinkedIn verification
-- Manual review by Fab Collab team (24-48 hours)
-- Tiers: Verified, Featured Expert, Fab Collab Fellow
+- Manual review by Collab It team (24-48 hours)
+- Tiers: Verified, Featured Expert, Collab It Fellow
 
 ### Build Order
 1. Add Think Tank as project type with custom sections

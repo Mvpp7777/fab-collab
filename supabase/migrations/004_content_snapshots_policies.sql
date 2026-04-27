@@ -1,4 +1,4 @@
--- Fab Collab - RLS policies for content_snapshots
+-- Collab It - RLS policies for content_snapshots
 -- Snapshots are readable/writable by the owner of the parent project.
 
 create policy "Owner can select snapshots"

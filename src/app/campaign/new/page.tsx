@@ -26,10 +26,10 @@ export default function NewCampaignPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" aria-label="Fab Collab home">
+          <Link href="/dashboard" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link
@@ -169,7 +169,7 @@ export default function NewCampaignPage() {
               Slug <span className="ml-1 text-ocean/40">(shareable URL)</span>
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-ocean/50">fabcollab.vercel.app/campaign/</span>
+              <span className="text-sm text-ocean/50">collabit.vercel.app/campaign/</span>
               <input
                 type="text"
                 name="slug"

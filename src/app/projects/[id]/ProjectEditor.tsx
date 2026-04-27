@@ -392,7 +392,7 @@ export default function ProjectEditor({
       destination: "distrokid",
     });
     const url =
-      "https://distrokid.com/?utm_source=fabcollab&utm_medium=referral&utm_campaign=distribute_button";
+      "https://distrokid.com/?utm_source=collabit&utm_medium=referral&utm_campaign=distribute_button";
     window.open(url, "_blank", "noopener");
     setTimeout(() => setDistributeBusy(false), 500);
   };

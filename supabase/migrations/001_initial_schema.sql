@@ -1,4 +1,4 @@
--- Fab Collab - initial schema
+-- Collab It - initial schema
 -- Creates core tables for users, projects, collaboration, content, and notifications.
 -- RLS is enabled on every table; policies are intentionally left for a later migration.
 

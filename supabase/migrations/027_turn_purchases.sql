@@ -1,4 +1,4 @@
--- Fab Collab - "Buy a Turn" Stripe-backed feature.
+-- Collab It - "Buy a Turn" Stripe-backed feature.
 
 alter table public.sections
   add column if not exists purchasable boolean not null default false;

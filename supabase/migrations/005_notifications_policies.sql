@@ -1,4 +1,4 @@
--- Fab Collab - RLS policies for notifications
+-- Collab It - RLS policies for notifications
 -- A user can read and update their own notifications.
 -- Inserts happen server-side when a turn is passed — the inserter (the
 -- passer) is not the recipient, so the INSERT policy is permissive for

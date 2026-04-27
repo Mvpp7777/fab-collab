@@ -145,7 +145,7 @@ export default function ShareMenu({
       }
       case "email": {
         const text = buildSharePost(baseParams);
-        const subject = "Check out what we're creating on Fab Collab";
+        const subject = "Check out what we're creating on Collab It";
         window.location.href = `mailto:?subject=${encodeURIComponent(
           subject,
         )}&body=${encodeURIComponent(text)}`;

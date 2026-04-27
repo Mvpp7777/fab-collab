@@ -7,7 +7,7 @@ import { createProjectFromTemplate } from "./actions";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Templates · Fab Collab",
+  title: "Templates · Collab It",
   description:
     "Reusable project templates — spin up a new song, screenplay, business plan, or Think Tank in seconds.",
 };
@@ -55,10 +55,10 @@ export default async function TemplatesIndex() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link href="/dashboard" className="text-sm font-medium text-ocean/70 hover:text-ocean">
@@ -79,7 +79,7 @@ export default async function TemplatesIndex() {
         {viewerId && mine.length > 0 && (
           <TemplateSection heading="My templates" templates={mine} showOwnerActions />
         )}
-        <TemplateSection heading="Official Fab Collab templates" templates={official} />
+        <TemplateSection heading="Official Collab It templates" templates={official} />
         <TemplateSection heading="Community templates" templates={community} />
 
         {!viewerId && (

@@ -1,4 +1,4 @@
--- Fab Collab - achievement badges.
+-- Collab It - achievement badges.
 
 create table if not exists public.user_badges (
   id         uuid primary key default gen_random_uuid(),

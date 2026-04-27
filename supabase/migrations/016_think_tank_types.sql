@@ -1,4 +1,4 @@
--- Fab Collab - Think Tank & Innovation project types.
+-- Collab It - Think Tank & Innovation project types.
 -- Extends public.project_type enum. Idempotent via IF NOT EXISTS.
 
 alter type public.project_type add value if not exists 'think_tank';

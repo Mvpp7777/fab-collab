@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service · Fab Collab",
+  title: "Terms of Service · Collab It",
 };
 
 export default function TermsPage() {
@@ -9,10 +9,10 @@ export default function TermsPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link
@@ -31,11 +31,11 @@ export default function TermsPage() {
         <p className="mt-2 text-sm text-ocean/50">Last updated: April 2026</p>
 
         <article className="prose mt-8 max-w-none space-y-6 text-ocean">
-          <Section title="1. What Fab Collab is">
-            Fab Collab™ is a collaborative creative-writing platform. Users
+          <Section title="1. What Collab It is">
+            Collab It™ is a collaborative creative-writing platform. Users
             create projects (songs, screenplays, novels, business documents,
             and more), invite collaborators, take turns writing, and optionally
-            publish completed work to a public gallery. Fab Collab also
+            publish completed work to a public gallery. Collab It also
             provides AI writing assistance and optional discovery by industry
             professionals.
           </Section>
@@ -49,13 +49,13 @@ export default function TermsPage() {
 
           <Section title="3. Content ownership">
             You retain all ownership and intellectual-property rights in the
-            content you create on Fab Collab. Co-written projects are jointly
+            content you create on Collab It. Co-written projects are jointly
             owned by the contributors in a manner determined by those
-            contributors — Fab Collab does not claim any share of ownership.
+            contributors — Collab It does not claim any share of ownership.
           </Section>
 
           <Section title="4. License you grant us">
-            You grant Fab Collab a limited, worldwide, royalty-free license to
+            You grant Collab It a limited, worldwide, royalty-free license to
             store, reproduce, display, and transmit your content solely to
             operate and improve the service — for example, to render your
             project to collaborators, to email notifications, and to display
@@ -65,11 +65,11 @@ export default function TermsPage() {
           </Section>
 
           <Section title="5. Prohibited use">
-            Don&rsquo;t use Fab Collab to: upload content you don&rsquo;t have
+            Don&rsquo;t use Collab It to: upload content you don&rsquo;t have
             the right to share; harass, threaten, or deceive others; infringe
             copyright or trademarks; upload malicious code; attempt to breach
             the platform&rsquo;s security or rate-limiting; scrape or resell
-            Fab Collab content without permission.
+            Collab It content without permission.
           </Section>
 
           <Section title="6. AI assistance">
@@ -86,7 +86,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="8. No warranty / limitation of liability">
-            Fab Collab is provided &ldquo;as is,&rdquo; without warranty of any
+            Collab It is provided &ldquo;as is,&rdquo; without warranty of any
             kind, express or implied. To the extent permitted by law, Fab
             Collab&rsquo;s total liability for any claim relating to the
             service will not exceed the greater of the amount you paid us in
@@ -95,47 +95,47 @@ export default function TermsPage() {
 
           <Section title="9. Changes to these terms">
             We may update these terms from time to time. Material changes will
-            be announced in-app or by email. Continued use of Fab Collab after
+            be announced in-app or by email. Continued use of Collab It after
             the effective date of changes means you accept the new terms.
           </Section>
 
           <Section title="10. Governing law">
             These terms are governed by the laws of the jurisdiction in which
-            Fab Collab is incorporated, without regard to conflict-of-laws
+            Collab It is incorporated, without regard to conflict-of-laws
             principles. Disputes will be resolved in the courts of that
             jurisdiction.
           </Section>
 
-          <Section title="11. Intellectual Property — Fab Collab">
-            The Fab Collab™ platform, including its design, features, relay
+          <Section title="11. Intellectual Property — Collab It">
+            The Collab It™ platform, including its design, features, relay
             mode technology, and underlying code, is protected by copyright
-            and intellectual property laws. Fab Collab™ is a trademark. You
+            and intellectual property laws. Collab It™ is a trademark. You
             may not copy, modify, or reverse engineer any part of the
             platform.
           </Section>
 
           <Section title="12. Intellectual Property — Your Content">
-            You retain full ownership of all content you create on Fab Collab.
-            By posting content you grant Fab Collab a limited, non-exclusive
+            You retain full ownership of all content you create on Collab It.
+            By posting content you grant Collab It a limited, non-exclusive
             license to display it within the platform. We do not claim
             ownership of your creative work. We do not sell your content to
             third parties.
           </Section>
 
           <Section title="13. DMCA">
-            Fab Collab respects intellectual property rights. To submit a
+            Collab It respects intellectual property rights. To submit a
             copyright takedown notice contact{" "}
             <a
-              href="mailto:dmca@fabcollab.com"
+              href="mailto:dmca@collabit.com"
               className="font-medium text-lagoon hover:underline"
             >
-              dmca@fabcollab.com
+              dmca@collabit.com
             </a>
             .
           </Section>
 
           <Section title="14. Anti-scraping">
-            Automated access to the Fab Collab platform — including scraping,
+            Automated access to the Collab It platform — including scraping,
             crawling, or data mining — is prohibited without prior written
             permission.
           </Section>
@@ -143,10 +143,10 @@ export default function TermsPage() {
           <Section title="15. Contact">
             Questions about these terms? Email{" "}
             <a
-              href="mailto:support@fabcollab.com"
+              href="mailto:support@collabit.com"
               className="font-medium text-lagoon hover:underline"
             >
-              support@fabcollab.com
+              support@collabit.com
             </a>
             .
           </Section>

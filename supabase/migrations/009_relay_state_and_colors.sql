@@ -1,4 +1,4 @@
--- Fab Collab - relay_state table + collaborator color backfill.
+-- Collab It - relay_state table + collaborator color backfill.
 -- Tracks who currently holds the turn on each project; colors are assigned
 -- from a 5-item palette cycling on turn_order.
 

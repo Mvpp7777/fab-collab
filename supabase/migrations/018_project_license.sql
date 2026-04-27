@@ -1,4 +1,4 @@
--- Fab Collab - per-project license selection for the public gallery.
+-- Collab It - per-project license selection for the public gallery.
 -- Default "All Rights Reserved"; owner can change via the completion modal.
 
 alter table public.projects

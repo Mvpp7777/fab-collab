@@ -1,4 +1,4 @@
--- Fab Collab - Think Tank "Open for Investment" toggle.
+-- Collab It - Think Tank "Open for Investment" toggle.
 
 alter table public.projects
   add column if not exists is_seeking_investment boolean not null default false;

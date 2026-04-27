@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy · Fab Collab",
+  title: "Privacy Policy · Collab It",
 };
 
 export default function PrivacyPage() {
@@ -9,10 +9,10 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <Link
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
 
         <article className="prose mt-8 max-w-none space-y-6 text-ocean">
           <Section title="1. Data we collect">
-            When you use Fab Collab we collect the minimum needed to run the
+            When you use Collab It we collect the minimum needed to run the
             service: your email address, a display name you choose, and the
             content you create inside projects (sections, comments, AI-assist
             requests, feedback submissions). We also store standard metadata
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="2. How we use it">
-            We use your data only to run Fab Collab: authenticate you, render
+            We use your data only to run Collab It: authenticate you, render
             your projects to collaborators, send email notifications you asked
             for (invitations, &ldquo;your turn&rdquo; emails, etc.), and make
             product improvements. We do not sell your data, and we do not run
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="3. Third-party services">
-            Running Fab Collab requires a small set of trusted subprocessors.
+            Running Collab It requires a small set of trusted subprocessors.
             Each one only sees the data needed to do its job:
             <ul className="mt-2 list-disc pl-5 text-ocean/80">
               <li>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="4. We do not sell your data">
-            Fab Collab does not and will not sell personal data to advertisers,
+            Collab It does not and will not sell personal data to advertisers,
             data brokers, or training pipelines. Content you create is yours —
             see our Terms for details on ownership.
           </Section>
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="8. Children">
-            Fab Collab is not intended for children under 13 (or 16 in the
+            Collab It is not intended for children under 13 (or 16 in the
             EU/UK). We do not knowingly collect personal data from children
             below that age.
           </Section>
@@ -109,10 +109,10 @@ export default function PrivacyPage() {
           <Section title="10. Contact">
             Data requests, questions, or concerns? Email{" "}
             <a
-              href="mailto:privacy@fabcollab.com"
+              href="mailto:privacy@collabit.com"
               className="font-medium text-lagoon hover:underline"
             >
-              privacy@fabcollab.com
+              privacy@collabit.com
             </a>
             .
           </Section>

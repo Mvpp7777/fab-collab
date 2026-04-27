@@ -1,4 +1,4 @@
--- Fab Collab - distribution click tracking.
+-- Collab It - distribution click tracking.
 -- Records when a user clicks a "Distribute" CTA to an external partner
 -- (DistroKid first). Used to measure intent for partnership deals.
 

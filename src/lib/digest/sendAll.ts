@@ -4,7 +4,7 @@ import { sendDigestEmail } from "@/lib/resend";
 
 const SITE =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://fabcollab.vercel.app";
+  "https://collabit.vercel.app";
 
 export type DigestRunSummary = {
   scanned: number;

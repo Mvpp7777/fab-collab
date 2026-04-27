@@ -39,10 +39,10 @@ export default function ExpertsPage() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
@@ -62,7 +62,7 @@ export default function ExpertsPage() {
           Share your expertise. Get paid. Shape the future.
         </h1>
         <p className="mx-auto mt-5 max-w-3xl font-display text-lg text-ocean/70 sm:text-xl">
-          Fab Collab Think Tank connects teams with real-world experts who
+          Collab It Think Tank connects teams with real-world experts who
           contribute their knowledge directly into collaborative projects. Set
           your own rate. Work on your schedule.
         </p>
@@ -121,7 +121,7 @@ export default function ExpertsPage() {
             You set your own rate
           </h2>
           <p className="mt-2 text-base text-ocean/70">
-            Fab Collab handles all payments — you just contribute.
+            Collab It handles all payments — you just contribute.
           </p>
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Rate label="Industry advisor" range="$50–100 per contribution" />

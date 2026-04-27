@@ -1,4 +1,4 @@
--- Fab Collab - verified investor flag on user profiles.
+-- Collab It - verified investor flag on user profiles.
 
 alter table public.users
   add column if not exists is_verified_investor boolean not null default false;

@@ -1,4 +1,4 @@
--- Fab Collab - minimal RLS policies for project creation
+-- Collab It - minimal RLS policies for project creation
 -- Scope: owner can CRUD their own profile, projects, and sections of those projects.
 -- Wider policies (collaborators, invitations, comments, etc.) come in a later migration.
 

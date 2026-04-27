@@ -35,7 +35,7 @@ export default function CampaignCTA({ slug, isFull, isLoggedIn, shareUrl, shareT
     const full = `${shareText}\n\n${shareUrl}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Fab Collab", text: shareText, url: shareUrl });
+        await navigator.share({ title: "Collab It", text: shareText, url: shareUrl });
         return;
       }
       await navigator.clipboard.writeText(full);

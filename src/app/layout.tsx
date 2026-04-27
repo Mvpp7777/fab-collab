@@ -9,7 +9,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Fab Collab",
+  title: "Collab It",
   description: "Creative co-writing for songwriters, screenwriters, and novelists.",
 };
 

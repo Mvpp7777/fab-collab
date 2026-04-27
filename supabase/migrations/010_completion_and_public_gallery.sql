@@ -1,4 +1,4 @@
--- Fab Collab - completion timestamp + public gallery visibility.
+-- Collab It - completion timestamp + public gallery visibility.
 -- PRIVACY: projects.is_public remains default FALSE. Public visibility is
 -- strictly opt-in per-project, only togglable by the owner, only while
 -- the project is marked completed.

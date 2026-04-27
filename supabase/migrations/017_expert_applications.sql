@@ -1,4 +1,4 @@
--- Fab Collab - expert applications (Think Tank marketplace waitlist).
+-- Collab It - expert applications (Think Tank marketplace waitlist).
 -- Anyone can submit; only service_role can read.
 
 create table if not exists public.expert_applications (

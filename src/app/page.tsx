@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "Fab Collab — Write it together. Get discovered. Get paid.",
+  title: "Collab It — Write it together. Get discovered. Get paid.",
   description:
     "The platform where creative teams, business teams, and innovators create together — with every contribution attributed, every turn accountable, and every completed project ready for the world.",
   openGraph: {
-    title: "Fab Collab — Write it together. Get discovered. Get paid.",
+    title: "Collab It — Write it together. Get discovered. Get paid.",
     description:
       "The platform where creative teams, business teams, and innovators create together — with every contribution attributed, every turn accountable, and every completed project ready for the world.",
     type: "website",
@@ -59,10 +59,10 @@ export default function Landing() {
     <div className="min-h-screen bg-foam">
       <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-2xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-ocean/70">
@@ -241,7 +241,7 @@ export default function Landing() {
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-base text-ocean/70 sm:text-lg">
             From marketing campaigns to legal documents to strategic plans —
-            Fab Collab gives every contributor a clear role, a clear turn,
+            Collab It gives every contributor a clear role, a clear turn,
             and clear attribution.
           </p>
         </div>
@@ -285,7 +285,7 @@ export default function Landing() {
             Start your team project →
           </Link>
           <a
-            href="mailto:hello@fabcollab.com"
+            href="mailto:hello@collabit.com"
             className="rounded-full border border-ocean/15 bg-white px-5 py-2.5 font-display text-sm font-medium text-ocean transition hover:bg-ocean hover:text-white"
           >
             Request a demo →
@@ -312,7 +312,7 @@ export default function Landing() {
               purpose and guidance.
             </p>
             <p>
-              Fab Collab exists to bring people together — to create things
+              Collab It exists to bring people together — to create things
               that matter, tell stories that heal, build ideas that help, and
               connect people across distances and differences.
             </p>
@@ -322,7 +322,7 @@ export default function Landing() {
               gets discovered. For every collaborator who builds something
               they could not have created alone.
             </p>
-            <p>Fab Collab is the bridge.</p>
+            <p>Collab It is the bridge.</p>
           </div>
           <div
             aria-hidden
@@ -377,10 +377,10 @@ export default function Landing() {
       {/* Footer */}
       <footer className="border-t border-ocean/10 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8">
-          <Link href="/" aria-label="Fab Collab home">
+          <Link href="/" aria-label="Collab It home">
             <span className="font-display text-xl font-extrabold tracking-tight">
-              <span className="text-ocean">fab</span>
-              <span className="text-lagoon">collab</span>
+              <span className="text-ocean">collab</span>
+              <span className="text-lagoon">it</span>
             </span>
           </Link>
           <nav className="flex flex-wrap items-center gap-5 text-sm font-medium text-ocean/70">
@@ -391,7 +391,7 @@ export default function Landing() {
             <Link href="/terms" className="hover:text-ocean">Terms</Link>
             <Link href="/privacy" className="hover:text-ocean">Privacy</Link>
           </nav>
-          <p className="text-sm text-ocean/50">© 2026 Fab Collab™</p>
+          <p className="text-sm text-ocean/50">© 2026 Collab It™</p>
         </div>
       </footer>
     </div>

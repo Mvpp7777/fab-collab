@@ -65,7 +65,7 @@ export async function POST(req: Request) {
             currency: "usd",
             product_data: {
               name: `Tip for ${project.title}`,
-              description: "Support the creators of this project on Fab Collab.",
+              description: "Support the creators of this project on Collab It.",
             },
             unit_amount: amountCents,
           },
