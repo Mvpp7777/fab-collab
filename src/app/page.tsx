@@ -56,12 +56,15 @@ const PROJECT_EMOJIS = ["🎵", "🎬", "📖", "✍️", "🎙️", "🏗️", 
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-foam">
-      <header className="border-b border-ocean/10 bg-foam/80 backdrop-blur">
+    <div style={{ overflow: "visible" }} className="min-h-screen bg-foam">
+      <header
+        style={{ overflow: "visible" }}
+        className="border-b border-ocean/10 bg-foam/80 backdrop-blur"
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" aria-label="Collab It home">
             <span
-              style={{ paddingBottom: "4px" }}
+              style={{ paddingBottom: "16px", lineHeight: "1.5" }}
               className="inline-block font-display text-2xl font-extrabold leading-normal tracking-tight"
             >
               <span className="text-ocean">collab</span>
@@ -90,19 +93,19 @@ export default function Landing() {
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 text-center sm:pt-28">
         <h1
-          style={{ paddingBottom: "4px" }}
+          style={{ paddingBottom: "16px", lineHeight: "1.5" }}
           className="font-display text-5xl font-extrabold leading-normal tracking-tight text-ocean sm:text-6xl md:text-7xl"
         >
           Create it together. <span className="text-lagoon">Get discovered.</span>{" "}
           Get paid.
         </h1>
         <p
-          style={{ paddingBottom: "4px" }}
+          style={{ paddingBottom: "16px", lineHeight: "1.5" }}
           className="mx-auto mt-6 max-w-2xl font-display text-lg leading-normal text-ocean/70 sm:text-xl"
         >
           <span
             className="block italic"
-            style={{ color: "#0BBFBF", paddingBottom: "4px" }}
+            style={{ color: "#0BBFBF", paddingBottom: "16px", lineHeight: "1.5" }}
           >
             Where creativity becomes reality.
           </span>
@@ -130,7 +133,7 @@ export default function Landing() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16">
         <h2
-          style={{ paddingBottom: "4px" }}
+          style={{ paddingBottom: "16px", lineHeight: "1.5" }}
           className="text-center font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
         >
           Everything you need to co-create
@@ -142,7 +145,7 @@ export default function Landing() {
                 {f.emoji}
               </div>
               <h3
-                style={{ paddingBottom: "4px" }}
+                style={{ paddingBottom: "16px", lineHeight: "1.5" }}
                 className="mt-3 font-display text-lg font-bold leading-normal text-ocean"
               >
                 {f.title}
@@ -156,7 +159,7 @@ export default function Landing() {
       {/* Project types */}
       <section className="mx-auto max-w-4xl px-6 py-12 text-center">
         <p
-          style={{ paddingBottom: "4px" }}
+          style={{ paddingBottom: "16px", lineHeight: "1.5" }}
           className="font-display text-lg leading-normal text-ocean/70 sm:text-xl"
         >
           Join creators writing songs, screenplays, novels, business plans and
@@ -178,7 +181,7 @@ export default function Landing() {
             Think Tank — Where Ideas Meet Expertise
           </div>
           <h2
-            style={{ paddingBottom: "4px" }}
+            style={{ paddingBottom: "16px", lineHeight: "1.5" }}
             className="mt-4 font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
           >
             Got a big idea? Get expert input.
@@ -193,7 +196,7 @@ export default function Landing() {
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h3
-              style={{ paddingBottom: "4px" }}
+              style={{ paddingBottom: "16px", lineHeight: "1.5" }}
               className="font-display text-lg font-bold leading-normal text-ocean"
             >
               For teams with ideas
@@ -219,7 +222,7 @@ export default function Landing() {
           </div>
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h3
-              style={{ paddingBottom: "4px" }}
+              style={{ paddingBottom: "16px", lineHeight: "1.5" }}
               className="font-display text-lg font-bold leading-normal text-ocean"
             >
               For experts
@@ -270,7 +273,7 @@ export default function Landing() {
             For business teams
           </div>
           <h2
-            style={{ paddingBottom: "4px" }}
+            style={{ paddingBottom: "16px", lineHeight: "1.5" }}
             className="mt-4 font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
           >
             Built for teams who create together
@@ -305,7 +308,7 @@ export default function Landing() {
                 {c.emoji}
               </div>
               <h3
-                style={{ paddingBottom: "4px" }}
+                style={{ paddingBottom: "16px", lineHeight: "1.5" }}
                 className="mt-3 font-display text-lg font-bold leading-normal text-ocean"
               >
                 {c.title}
@@ -342,29 +345,29 @@ export default function Landing() {
             Our Mission
           </div>
           <h2
-            style={{ paddingBottom: "4px" }}
+            style={{ paddingBottom: "16px", lineHeight: "1.5" }}
             className="mt-5 font-display text-4xl font-extrabold leading-normal tracking-tight text-white sm:text-5xl"
           >
             Built with purpose. Guided by something greater.
           </h2>
           <div className="mx-auto mt-8 max-w-2xl space-y-5 font-display text-base leading-relaxed text-white/80 sm:text-lg">
-            <p style={{ paddingBottom: "4px" }}>
+            <p style={{ paddingBottom: "16px", lineHeight: "1.5" }}>
               Every feature built, every problem solved, every collaboration
               that comes to life here — we believe none of it happens without
               purpose and guidance.
             </p>
-            <p style={{ paddingBottom: "4px" }}>
+            <p style={{ paddingBottom: "16px", lineHeight: "1.5" }}>
               Collab It exists to bring people together — to create things
               that matter, tell stories that heal, build ideas that help, and
               connect people across distances and differences.
             </p>
-            <p style={{ paddingBottom: "4px" }}>
+            <p style={{ paddingBottom: "16px", lineHeight: "1.5" }}>
               For the songwriter who finds their co-writer. For the
               entrepreneur whose idea finds its expert. For the creator who
               gets discovered. For every collaborator who builds something
               they could not have created alone.
             </p>
-            <p style={{ paddingBottom: "4px" }}>Collab It is the bridge.</p>
+            <p style={{ paddingBottom: "16px", lineHeight: "1.5" }}>Collab It is the bridge.</p>
           </div>
           <div
             aria-hidden
@@ -372,7 +375,7 @@ export default function Landing() {
             style={{ backgroundColor: "#0BBFBF" }}
           />
           <p
-            style={{ color: "#0BBFBF", paddingBottom: "4px" }}
+            style={{ color: "#0BBFBF", paddingBottom: "16px", lineHeight: "1.5" }}
             className="mt-8 font-display text-2xl italic leading-normal sm:text-3xl"
           >
             All glory to God. Now go build something legendary.
@@ -384,7 +387,7 @@ export default function Landing() {
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-12">
           <h2
-            style={{ paddingBottom: "4px" }}
+            style={{ paddingBottom: "16px", lineHeight: "1.5" }}
             className="font-display text-3xl font-extrabold leading-normal text-ocean sm:text-4xl"
           >
             Industry professionals — get early access
@@ -405,7 +408,7 @@ export default function Landing() {
       {/* Final CTA */}
       <section className="mx-auto max-w-4xl px-6 py-20 text-center">
         <h2
-          style={{ paddingBottom: "4px" }}
+          style={{ paddingBottom: "16px", lineHeight: "1.5" }}
           className="font-display text-4xl font-extrabold leading-normal text-ocean sm:text-5xl"
         >
           Ready to create something legendary?
@@ -427,7 +430,7 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8">
           <Link href="/" aria-label="Collab It home">
             <span
-              style={{ paddingBottom: "4px" }}
+              style={{ paddingBottom: "16px", lineHeight: "1.5" }}
               className="inline-block font-display text-xl font-extrabold leading-normal tracking-tight"
             >
               <span className="text-ocean">collab</span>
