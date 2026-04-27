@@ -293,6 +293,51 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Mission */}
+      <section
+        style={{ backgroundColor: "#1A2E2E" }}
+        className="w-full px-6 py-24 text-center sm:py-28"
+      >
+        <div className="mx-auto max-w-3xl">
+          <div className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-lagoon">
+            Our Mission
+          </div>
+          <h2 className="mt-5 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">
+            Built with purpose. Guided by something greater.
+          </h2>
+          <div className="mx-auto mt-8 max-w-2xl space-y-5 font-display text-base leading-relaxed text-white/80 sm:text-lg">
+            <p>
+              Every feature built, every problem solved, every collaboration
+              that comes to life here — we believe none of it happens without
+              purpose and guidance.
+            </p>
+            <p>
+              Fab Collab exists to bring people together — to create things
+              that matter, tell stories that heal, build ideas that help, and
+              connect people across distances and differences.
+            </p>
+            <p>
+              For the songwriter who finds their co-writer. For the
+              entrepreneur whose idea finds its expert. For the creator who
+              gets discovered. For every collaborator who builds something
+              they could not have created alone.
+            </p>
+            <p>Fab Collab is the bridge.</p>
+          </div>
+          <div
+            aria-hidden
+            className="mx-auto mt-12 h-px w-24"
+            style={{ backgroundColor: "#0BBFBF" }}
+          />
+          <p
+            style={{ color: "#0BBFBF" }}
+            className="mt-8 font-display text-2xl italic sm:text-3xl"
+          >
+            All glory to God. Now go build something legendary.
+          </p>
+        </div>
+      </section>
+
       {/* Industry CTA */}
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm sm:p-12">
