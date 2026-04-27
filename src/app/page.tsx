@@ -86,7 +86,7 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 text-center sm:pt-28">
-        <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-ocean sm:text-6xl md:text-7xl">
+        <h1 className="pb-1 font-display text-5xl font-extrabold leading-[1.15] tracking-tight text-ocean sm:text-6xl md:text-7xl">
           Create it together. <span className="text-lagoon">Get discovered.</span>{" "}
           Get paid.
         </h1>
