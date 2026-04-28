@@ -112,25 +112,31 @@ type Props = {
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
 
+// Real Google Meet room codes are xxx-xxxx-xxx (lowercase letters only).
+// This format works for any Google account holder; the legacy /lookup/ URL
+// path is unreliable because Google treats unknown lookup keys inconsistently.
 function generateMeetCode(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let s = "";
-  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
+  const letters = "abcdefghijklmnopqrstuvwxyz";
+  const pick = (n: number) =>
+    Array.from({ length: n }, () =>
+      letters[Math.floor(Math.random() * letters.length)],
+    ).join("");
+  return `${pick(3)}-${pick(4)}-${pick(3)}`;
 }
 
 type CallOption = {
   id: "meet" | "zoom" | "facetime" | "teams" | "discord";
   label: string;
   emoji: string;
+  note: string;
 };
 
 const CALL_OPTIONS: CallOption[] = [
-  { id: "meet",     label: "Google Meet",     emoji: "📹" },
-  { id: "zoom",     label: "Zoom",            emoji: "🔵" },
-  { id: "facetime", label: "FaceTime",        emoji: "🟣" },
-  { id: "teams",    label: "Microsoft Teams", emoji: "🟦" },
-  { id: "discord",  label: "Discord",         emoji: "🎮" },
+  { id: "meet",     label: "Google Meet",     emoji: "📹", note: "Requires a Google account to join" },
+  { id: "zoom",     label: "Zoom",            emoji: "🔵", note: "Opens Zoom — account required" },
+  { id: "facetime", label: "FaceTime",        emoji: "🟣", note: "iPhone and Mac only" },
+  { id: "teams",    label: "Microsoft Teams", emoji: "🟦", note: "Microsoft account required" },
+  { id: "discord",  label: "Discord",         emoji: "🎮", note: "Discord account required" },
 ];
 
 export default function ProjectEditor({
@@ -452,7 +458,7 @@ export default function ProjectEditor({
     setCallMenuOpen(false);
     switch (id) {
       case "meet": {
-        const url = `https://meet.google.com/lookup/${generateMeetCode()}`;
+        const url = `https://meet.google.com/${generateMeetCode()}`;
         try {
           await navigator.clipboard.writeText(url);
         } catch {
@@ -530,7 +536,7 @@ export default function ProjectEditor({
               {callMenuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-xl border border-ocean/10 bg-white py-1 shadow-lg"
+                  className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-xl border border-ocean/10 bg-white py-1 shadow-lg"
                 >
                   {CALL_OPTIONS.map((opt) => (
                     <button
@@ -538,10 +544,17 @@ export default function ProjectEditor({
                       role="menuitem"
                       type="button"
                       onClick={() => handleCallOption(opt.id)}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-ocean transition hover:bg-foam"
+                      className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-foam"
                     >
-                      <span aria-hidden className="text-base">{opt.emoji}</span>
-                      <span>{opt.label}</span>
+                      <span aria-hidden className="mt-0.5 text-base">
+                        {opt.emoji}
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-medium text-ocean">
+                          {opt.label}
+                        </span>
+                        <span className="text-xs text-ocean/60">{opt.note}</span>
+                      </span>
                     </button>
                   ))}
                 </div>
