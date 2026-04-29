@@ -135,6 +135,95 @@ export async function setSectionPurchasable(params: {
   return { ok: true, purchasable: Boolean(params.purchasable), priceCents };
 }
 
+// =============================================================================
+// Line-by-line contributions
+// =============================================================================
+
+export type ContributionLineRow = {
+  id: string;
+  section_id: string;
+  content_text: string;
+  saved_by: string | null;
+  line_position: number;
+  created_at: string;
+};
+
+export type AddContributionLineResult =
+  | { ok: true; line: ContributionLineRow }
+  | { error: string };
+
+export async function addContributionLine(params: {
+  sectionId: string;
+  text: string;
+}): Promise<AddContributionLineResult> {
+  const text = params.text.trim();
+  if (!text) return { error: "Write a line before adding." };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const admin = createAdminClient();
+
+  const { data: section } = await admin
+    .from("sections")
+    .select("id, project_id")
+    .eq("id", params.sectionId)
+    .maybeSingle();
+  if (!section) return { error: "Section not found." };
+
+  const { data: relayState } = await admin
+    .from("relay_state")
+    .select("current_holder")
+    .eq("project_id", section.project_id)
+    .maybeSingle();
+  // If relay_state is missing, fall back to allowing the project owner. This
+  // mirrors the page-level fallback in src/app/projects/[id]/page.tsx.
+  let currentHolder = relayState?.current_holder ?? null;
+  if (!currentHolder) {
+    const { data: project } = await admin
+      .from("projects")
+      .select("owner_id")
+      .eq("id", section.project_id)
+      .maybeSingle();
+    currentHolder = project?.owner_id ?? null;
+  }
+  if (currentHolder !== user.id) {
+    return { error: "It's not your turn." };
+  }
+
+  // Compute next line position. We use the admin client throughout so the
+  // ordering query isn't affected by any RLS that might hide other users'
+  // contributions from the caller.
+  const { data: tail } = await admin
+    .from("content_snapshots")
+    .select("line_position")
+    .eq("section_id", params.sectionId)
+    .not("line_position", "is", null)
+    .order("line_position", { ascending: false })
+    .limit(1);
+  const nextPosition = (tail?.[0]?.line_position ?? 0) + 1;
+
+  const { data: inserted, error: insertErr } = await admin
+    .from("content_snapshots")
+    .insert({
+      section_id: params.sectionId,
+      content_text: text,
+      saved_by: user.id,
+      is_autosave: false,
+      line_position: nextPosition,
+    })
+    .select("id, section_id, content_text, saved_by, line_position, created_at")
+    .single();
+  if (insertErr || !inserted) {
+    return { error: insertErr?.message ?? "Failed to add line." };
+  }
+
+  return { ok: true, line: inserted as ContributionLineRow };
+}
+
 export type SaveSectionResult = { ok: true } | { error: string };
 
 export async function saveSection(params: {
@@ -171,7 +260,17 @@ export async function passTurn(params: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
-  const { data: project, error: projectErr } = await supabase
+  // Use the admin client for all reads/writes against relay_state and the full
+  // collaborators list. The auth client (`supabase`) above already established
+  // identity via getUser() and we explicitly verify the caller is the current
+  // holder below — so there is no privilege escalation here. The previous code
+  // path used the RLS-gated client and silently no-op'd when an UPDATE was
+  // blocked (Postgres returns affectedRows=0 with error=null), which is what
+  // caused turn passes to appear successful client-side without actually
+  // advancing the holder.
+  const admin = createAdminClient();
+
+  const { data: project, error: projectErr } = await admin
     .from("projects")
     .select("id, title, owner_id")
     .eq("id", params.projectId)
@@ -181,7 +280,7 @@ export async function passTurn(params: {
   }
 
   // Gate: only the current turn holder may pass.
-  const { data: state } = await supabase
+  const { data: state } = await admin
     .from("relay_state")
     .select("current_holder")
     .eq("project_id", project.id)
@@ -195,7 +294,7 @@ export async function passTurn(params: {
     return { error: "It's not your turn." };
   }
 
-  const { data: collaborators } = await supabase
+  const { data: collaborators } = await admin
     .from("collaborators")
     .select("user_id, turn_order, users(display_name)")
     .eq("project_id", project.id)
@@ -217,14 +316,17 @@ export async function passTurn(params: {
   const userRow = Array.isArray(usersRel) ? usersRel[0] : usersRel;
   const nextName = userRow?.display_name ?? "your collaborator";
 
-  // Advance relay_state to the next holder.
-  const { error: updateErr } = await supabase
+  // Advance relay_state to the next holder. Admin client bypasses RLS so this
+  // actually writes regardless of whether the caller is in the collaborators
+  // membership table. The auth.uid() === current_holder gate above is the
+  // real authorization check.
+  const { error: updateErr } = await admin
     .from("relay_state")
     .update({ current_holder: next.user_id })
     .eq("project_id", project.id);
   if (updateErr) return { error: `Relay update: ${updateErr.message}` };
 
-  await supabase.from("notifications").insert({
+  await admin.from("notifications").insert({
     user_id: next.user_id,
     type: "turn_passed",
     project_id: project.id,

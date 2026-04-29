@@ -83,17 +83,32 @@ export default async function ProjectPage({
 
   const sections = (sectionsData ?? []) as SectionRow[];
 
+  // Fetch every snapshot so we can both:
+  //   (a) reconstruct legacy "whole section" snapshots (line_position is null)
+  //   (b) build the per-section line feed (line_position is not null), ordered
+  //       by line_position ASC so the feed reads top-to-bottom in write order.
   const { data: snapshotsData } = await admin
     .from("content_snapshots")
-    .select("section_id, content_text, saved_by, created_at")
+    .select("id, section_id, content_text, saved_by, line_position, created_at")
     .in(
       "section_id",
       sections.map((s) => s.id),
     )
     .order("created_at", { ascending: false });
 
+  const allSnapshots = (snapshotsData ?? []) as Array<
+    SnapshotRow & {
+      id: string;
+      line_position: number | null;
+    }
+  >;
+
+  // Latest *legacy* snapshot per section (line_position null) — used purely so
+  // existing AI-flows / autosave fallback still see the most-recent edit if a
+  // section was created before the line-by-line UI. Not shown in the new feed.
   const latestBySection: Record<string, SnapshotRow> = {};
-  for (const snap of (snapshotsData ?? []) as SnapshotRow[]) {
+  for (const snap of allSnapshots) {
+    if (snap.line_position !== null) continue;
     if (!(snap.section_id in latestBySection)) {
       latestBySection[snap.section_id] = snap;
     }
@@ -101,6 +116,34 @@ export default async function ProjectPage({
   const initialContent: Record<string, string> = Object.fromEntries(
     sections.map((s) => [s.id, latestBySection[s.id]?.content_text ?? ""]),
   );
+
+  // Per-section line feed (oldest first by line_position).
+  type LineRow = {
+    id: string;
+    section_id: string;
+    content_text: string;
+    saved_by: string | null;
+    line_position: number;
+    created_at: string;
+  };
+  const linesBySection: Record<string, LineRow[]> = Object.fromEntries(
+    sections.map((s) => [s.id, [] as LineRow[]]),
+  );
+  for (const snap of allSnapshots) {
+    if (snap.line_position === null) continue;
+    if (!(snap.section_id in linesBySection)) continue;
+    linesBySection[snap.section_id].push({
+      id: snap.id,
+      section_id: snap.section_id,
+      content_text: snap.content_text,
+      saved_by: snap.saved_by,
+      line_position: snap.line_position,
+      created_at: snap.created_at,
+    });
+  }
+  for (const sid of Object.keys(linesBySection)) {
+    linesBySection[sid].sort((a, b) => a.line_position - b.line_position);
+  }
 
   // Relay state — who currently holds the turn
   const { data: relayStateRow } = await admin
@@ -260,6 +303,7 @@ export default async function ProjectPage({
       }}
       sections={sections}
       initialContent={initialContent}
+      initialLinesBySection={linesBySection}
       displayName={displayName}
       initial={initial}
       myColor={myColor}

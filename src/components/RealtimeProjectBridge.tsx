@@ -4,9 +4,11 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type SectionInsertHandler = (row: {
+  id: string;
   section_id: string;
   content_text: string;
   saved_by: string | null;
+  line_position: number | null;
   created_at: string;
 }) => void;
 
@@ -42,9 +44,11 @@ export default function RealtimeProjectBridge({
         },
         (payload) => {
           const row = payload.new as {
+            id: string;
             section_id: string;
             content_text: string;
             saved_by: string | null;
+            line_position: number | null;
             created_at: string;
           };
           if (!ids.has(row.section_id)) return;

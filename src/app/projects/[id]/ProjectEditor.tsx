@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  addContributionLine,
   aiAssist,
   changeCollaboratorRole,
   changeInvitationRole,
@@ -49,6 +50,17 @@ function dollarsLabel(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 }
 
+function timeAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 60_000) return "just now";
+  const m = Math.floor(ms / 60_000);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d === 1 ? "" : "s"} ago`;
+}
+
 type Project = {
   id: string;
   title: string;
@@ -89,10 +101,20 @@ export type PendingInvitation = {
 
 export type LastEditor = { name: string; color: string };
 
+export type LineRow = {
+  id: string;
+  section_id: string;
+  content_text: string;
+  saved_by: string | null;
+  line_position: number;
+  created_at: string;
+};
+
 type Props = {
   project: Project;
   sections: Section[];
   initialContent: Record<string, string>;
+  initialLinesBySection: Record<string, LineRow[]>;
   displayName: string;
   initial: string;
   myColor: string;
@@ -143,6 +165,7 @@ export default function ProjectEditor({
   project,
   sections,
   initialContent,
+  initialLinesBySection,
   displayName,
   initial,
   myColor,
@@ -209,6 +232,45 @@ export default function ProjectEditor({
   );
   const [investmentBusy, setInvestmentBusy] = useState(false);
   const [investmentToast, setInvestmentToast] = useState<string | null>(null);
+
+  // Line-by-line contributions per section, ordered by line_position ASC.
+  const [linesBySection, setLinesBySection] = useState<Record<string, LineRow[]>>(
+    () => initialLinesBySection,
+  );
+  const [draftBySection, setDraftBySection] = useState<Record<string, string>>(
+    {},
+  );
+  const [addingBySection, setAddingBySection] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [lineErrorBySection, setLineErrorBySection] = useState<
+    Record<string, string | null>
+  >({});
+
+  const handleAddLine = useCallback(
+    async (sectionId: string) => {
+      const text = (draftBySection[sectionId] ?? "").trim();
+      if (!text) return;
+      if (addingBySection[sectionId]) return;
+      setAddingBySection((m) => ({ ...m, [sectionId]: true }));
+      setLineErrorBySection((m) => ({ ...m, [sectionId]: null }));
+      const result = await addContributionLine({ sectionId, text });
+      setAddingBySection((m) => ({ ...m, [sectionId]: false }));
+      if ("error" in result) {
+        setLineErrorBySection((m) => ({ ...m, [sectionId]: result.error }));
+        return;
+      }
+      // Optimistic + dedup append: realtime will also fire INSERT but the id
+      // dedup in handleSectionSnapshot prevents double-insert.
+      setLinesBySection((m) => {
+        const list = m[sectionId] ?? [];
+        if (list.some((l) => l.id === result.line.id)) return m;
+        return { ...m, [sectionId]: [...list, result.line] };
+      });
+      setDraftBySection((m) => ({ ...m, [sectionId]: "" }));
+    },
+    [draftBySection, addingBySection],
+  );
 
   const isThinkTank = THINK_TANK_TYPES.has(project.project_type);
   const canToggleInvestment =
@@ -405,12 +467,38 @@ export default function ProjectEditor({
 
   const handleSectionSnapshot = useCallback(
     (row: {
+      id: string;
       section_id: string;
       content_text: string;
       saved_by: string | null;
+      line_position: number | null;
+      created_at: string;
     }) => {
+      // Line contributions: append to the section's feed (with id dedup).
+      if (row.line_position !== null) {
+        setLinesBySection((m) => {
+          const list = m[row.section_id] ?? [];
+          if (list.some((l) => l.id === row.id)) return m;
+          const next = [
+            ...list,
+            {
+              id: row.id,
+              section_id: row.section_id,
+              content_text: row.content_text,
+              saved_by: row.saved_by,
+              line_position: row.line_position!,
+              created_at: row.created_at,
+            },
+          ];
+          next.sort((a, b) => a.line_position - b.line_position);
+          return { ...m, [row.section_id]: next };
+        });
+      }
       if (row.saved_by && row.saved_by === userId) return; // ignore own writes
-      setContent((c) => ({ ...c, [row.section_id]: row.content_text }));
+      // Legacy whole-section snapshot → keep `content` in sync for AI flows.
+      if (row.line_position === null) {
+        setContent((c) => ({ ...c, [row.section_id]: row.content_text }));
+      }
       const editor = collaborators.find((c) => c.user_id === row.saved_by);
       if (editor) {
         const entry = {
@@ -806,16 +894,98 @@ export default function ProjectEditor({
                     </span>
                   </div>
                 </div>
-                <textarea
-                  value={content[s.id] ?? ""}
-                  onChange={(e) => handleChange(s.id, e.target.value)}
-                  onFocus={() => setActiveId(s.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  readOnly={!isMyTurn}
-                  rows={5}
-                  placeholder={isMyTurn ? (active ? "Start writing..." : "Click to activate") : `Waiting for ${currentHolderName}...`}
-                  className="mt-3 w-full resize-y rounded-lg border border-ocean/10 bg-foam/50 px-3 py-2 text-ocean outline-none transition placeholder:text-ocean/40 focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 read-only:cursor-not-allowed read-only:bg-ocean/5"
-                />
+                <div className="mt-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                  {(linesBySection[s.id] ?? []).length === 0 && !isMyTurn && (
+                    <div className="rounded-lg border border-dashed border-ocean/15 px-3 py-4 text-center text-sm italic text-ocean/50">
+                      Waiting for {currentHolderName}…
+                    </div>
+                  )}
+                  {(linesBySection[s.id] ?? []).map((line) => {
+                    const author = collaborators.find(
+                      (c) => c.user_id === line.saved_by,
+                    );
+                    const authorColor = author?.color ?? FALLBACK_COLOR;
+                    const authorName =
+                      author?.display_name?.trim() || author?.email || "Someone";
+                    const authorInitial = authorName.charAt(0).toUpperCase();
+                    return (
+                      <div
+                        key={line.id}
+                        style={{ borderColor: authorColor }}
+                        className="flex items-start gap-3 rounded-lg border-l-4 bg-foam/40 px-3 py-2"
+                      >
+                        <span
+                          aria-hidden
+                          style={{ backgroundColor: authorColor, color: "white" }}
+                          className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-bold"
+                        >
+                          {authorInitial}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="whitespace-pre-wrap break-words text-base leading-relaxed text-ocean">
+                            {line.content_text}
+                          </div>
+                          <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-ocean/50">
+                            <span style={{ color: authorColor }} className="font-medium">
+                              {authorName}
+                            </span>
+                            <span>{timeAgo(line.created_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {isMyTurn ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void handleAddLine(s.id);
+                      }}
+                      className="flex items-start gap-3 rounded-lg border border-ocean/15 bg-white px-3 py-2 focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/30"
+                    >
+                      <span
+                        aria-hidden
+                        style={{ backgroundColor: myColor, color: "white" }}
+                        className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-bold"
+                      >
+                        {initial}
+                      </span>
+                      <input
+                        type="text"
+                        value={draftBySection[s.id] ?? ""}
+                        onChange={(e) =>
+                          setDraftBySection((m) => ({ ...m, [s.id]: e.target.value }))
+                        }
+                        onFocus={() => setActiveId(s.id)}
+                        placeholder="Add your line..."
+                        className="flex-1 bg-transparent text-base text-ocean outline-none placeholder:text-ocean/40"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="submit"
+                        disabled={
+                          !!addingBySection[s.id] ||
+                          !(draftBySection[s.id] ?? "").trim()
+                        }
+                        style={{ backgroundColor: "#FF6B47", color: "white" }}
+                        className="rounded-full px-3 py-1 font-display text-xs font-semibold shadow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {addingBySection[s.id] ? "Adding…" : "Add"}
+                      </button>
+                    </form>
+                  ) : (
+                    (linesBySection[s.id] ?? []).length > 0 && (
+                      <div className="rounded-lg border border-dashed border-ocean/15 px-3 py-2 text-center text-xs italic text-ocean/50">
+                        Waiting for {currentHolderName}…
+                      </div>
+                    )
+                  )}
+                  {lineErrorBySection[s.id] && (
+                    <p className="rounded-md bg-coral/10 px-3 py-2 text-xs text-coral">
+                      {lineErrorBySection[s.id]}
+                    </p>
+                  )}
+                </div>
                 {isOwner && (
                   <div
                     onClick={(e) => e.stopPropagation()}
